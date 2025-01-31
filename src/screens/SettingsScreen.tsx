@@ -10,6 +10,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/RootNavigator';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AddressService } from '../services/address';
+import { formatAddress } from '../utils/bitcoin';
 
 export default function SettingsScreen() {
   const { state: walletState, dispatch: walletDispatch } = useWallet();
@@ -52,12 +53,7 @@ export default function SettingsScreen() {
     );
   };
 
-  const formatAddress = (address: string) => {
-    if (address.length > 16) {
-      return `${address.slice(0, 8)}...${address.slice(-8)}`;
-    }
-    return address;
-  };
+  
 
   const settingsItems = [
     {

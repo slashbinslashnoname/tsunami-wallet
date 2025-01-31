@@ -6,12 +6,17 @@ import { useNavigation } from '@react-navigation/native';
 import { useWallet } from '../contexts/WalletContext';
 import { Transaction } from '../types/bitcoin';
 import { colors, spacing, typography, layout, borderRadius } from '../theme';
-import { AddressService } from '../services/address';
+import { formatAddress } from '../utils/bitcoin';
 
 function TransactionItem({ transaction }: { transaction: Transaction }) {
-  const isIncoming = transaction.amount > 0;
+  const isIncoming = transaction.type === "incoming";
   const amount = transaction.amount.toFixed(8);
   const date = new Date(transaction.timestamp).toLocaleDateString();
+
+  // Get the relevant address to display
+  const address = isIncoming 
+    ? transaction.addresses[transaction.addresses.length - 1] // Last address is usually the receiving address
+    : transaction.addresses[0]; // First address is usually the sending address
 
   return (
     <View style={styles.transactionItem}>
@@ -34,12 +39,11 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
             {isIncoming ? '+' : ''}{amount} <Text style={styles.currency}>BTC</Text>
           </Text>
           <Text style={[styles.status, transaction.confirmations > 0 && styles.confirmed]}>
-            {transaction.confirmations === 0 ? 'pending' : 
-             transaction.confirmations === 1 ? '1 confirmation' :
-             transaction.confirmations < 6 ? `${transaction.confirmations} confirmations` :
+            {transaction.confirmations === 0 ? 'pending' :
              'confirmed'}
           </Text>
         </View>
+
       </View>
     </View>
   );
@@ -54,36 +58,16 @@ export default function TransactionsScreen() {
   const [page, setPage] = useState(0);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  // Get all transactions and ensure we have both incoming and outgoing
-  const allTransactions = React.useMemo(() => {
-    return walletState.transactions.map(tx => ({
-      ...tx,
-      // Keep the original amount sign to determine transaction type
-      amount: tx.amount,
-      type: tx.amount > 0 ? 'incoming' : 'outgoing'
-    }));
-  }, [walletState.transactions]);
 
-  const sortedTransactions = React.useMemo(() => 
-    [...allTransactions].sort((a, b) => b.timestamp - a.timestamp),
-    [allTransactions]
-  );
-
-  const paginatedTransactions = sortedTransactions.slice(0, (page + 1) * TRANSACTIONS_PER_PAGE);
-  const hasMoreTransactions = paginatedTransactions.length < sortedTransactions.length;
+  const paginatedTransactions = walletState.transactions.slice(0, (page + 1) * TRANSACTIONS_PER_PAGE);
+  const hasMoreTransactions = paginatedTransactions.length < walletState.transactions.length;
 
   const onRefresh = async () => {
     if (!walletState.xpubData) return;
     
     setIsRefreshing(true);
     try {
-      const [balance, transactions] = await Promise.all([
-        AddressService.getXpubBalance(walletState.xpubData.xpub),
-        AddressService.getXpubTransactions(walletState.xpubData.xpub)
-      ]);
-
-      dispatch({ type: 'SET_BALANCE', payload: balance });
-      dispatch({ type: 'SET_TRANSACTIONS', payload: transactions });
+      dispatch({ type: "REFRESH" });
     } catch (error) {
       console.error('Error refreshing wallet data:', error);
     } finally {
@@ -193,9 +177,6 @@ const styles = StyleSheet.create({
   transactionItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.white,
-    padding: spacing.md,
-    borderRadius: borderRadius.md,
     marginBottom: spacing.sm,
     ...layout.card,
   },
@@ -228,14 +209,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   currency: {
-    ...typography.caption,
-    color: colors.text.secondary,
+    color: colors.primary,
   },
   incoming: {
-    color: colors.success,
+    color: colors.primary,
   },
   outgoing: {
-    color: colors.error,
+    color: colors.primary,
   },
   status: {
     ...typography.caption,
@@ -243,7 +223,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   confirmed: {
-    color: colors.success,
+    color: colors.primary,
   },
   emptyState: {
     flex: 1,
@@ -267,5 +247,9 @@ const styles = StyleSheet.create({
   loadMoreText: {
     ...typography.body,
     color: colors.primary,
+  },
+  address: {
+    ...typography.caption,
+    color: colors.text.secondary,
   },
 }); 

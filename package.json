@@ -20,6 +20,7 @@
     "@types/bitcoinjs-lib": "^5.0.4",
     "assert": "^2.1.0",
     "bip32": "^5.0.0-rc.0",
+    "bip39": "^3.1.0",
     "bitcoinjs-lib": "^6.1.7",
     "buffer": "^6.0.3",
     "ecpair": "^3.0.0-rc.0",

@@ -23,17 +23,11 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
   const { state } = useWallet();
-
+console.log(state)
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        {state.isLoading ? (
-          <Stack.Screen 
-            name="Loading" 
-            component={LoadingScreen} 
-            options={{ headerShown: false }} 
-          />
-        ) : !state.xpubData  ? (
+        {!state.xpubData || state.isLoading ? (
           <Stack.Screen 
             name="ImportXPub" 
             component={ImportXPubScreen} 

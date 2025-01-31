@@ -3,7 +3,6 @@ import { XPubData, Balance, Transaction } from '../types/bitcoin';
 import { StorageService } from '../services/storage';
 import { AddressService } from '../services/address';
 import { AddressData } from '../types/bitcoin';
-import { WebSocketService } from '../services/websocket';
 
 interface WalletState {
   transactions: Transaction[];
@@ -188,25 +187,6 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       refreshWalletData(state.xpubData?.xpub || '');
     }
   }, [state.isRefreshing]);
-
-  useEffect(() => {
-    if (state.xpubData) {
-      WebSocketService.subscribe((tx) => {
-        // Check if transaction involves our addresses
-        const isRelevant = tx.addresses.some(addr => 
-          state.addresses.some(a => a.address === addr)
-        );
-        
-        if (isRelevant) {
-          dispatch({ type: 'REFRESH' });
-        }
-      });
-    }
-
-    return () => {
-      WebSocketService.unsubscribe((tx) => {});
-    };
-  }, [state.xpubData, state.addresses]);
 
   return (
     <WalletContext.Provider value={{ state, dispatch }}>

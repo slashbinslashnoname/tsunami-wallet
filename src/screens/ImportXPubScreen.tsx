@@ -18,6 +18,8 @@ export default function ImportXPubScreen() {
       const xpubData = XPubService.parseXPub(xpubInput.trim());
       await StorageService.saveXPubData(xpubData);
       dispatch({ type: 'SET_XPUB', payload: xpubData });
+      dispatch({ type: 'SET_LOADING', payload: false });
+      dispatch({ type: 'REFRESH' });
     } catch (error) {
       Alert.alert('Error', error instanceof Error ? error.message : 'Unknown error occurred');
     } finally {
