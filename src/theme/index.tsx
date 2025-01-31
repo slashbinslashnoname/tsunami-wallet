@@ -46,31 +46,26 @@ export const borderRadius = {
 export const typography = {
   heading: {
     fontSize: 28,
-    fontWeight: '700',
     color: colors.text.primary,
     letterSpacing: -0.5,
   },
   subheading: {
     fontSize: 20,
-    fontWeight: '600',
     color: colors.text.primary,
     letterSpacing: -0.3,
   },
   body: {
     fontSize: 16,
-    fontWeight: '400',
     color: colors.text.primary,
     letterSpacing: -0.2,
   },
   caption: {
     fontSize: 14,
-    fontWeight: '400',
     color: colors.text.secondary,
     letterSpacing: -0.1,
   },
   button: {
     fontSize: 16,
-    fontWeight: '600',
     letterSpacing: -0.2,
   },
 };
