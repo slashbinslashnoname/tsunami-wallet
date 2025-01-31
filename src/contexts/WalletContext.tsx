@@ -63,7 +63,7 @@ function walletReducer(state: WalletState, action: WalletAction): WalletState {
     case 'SET_REFRESHING':
       return { ...state, isRefreshing: action.payload };
     case 'REFRESH':
-      return { ...state, isRefreshing: true };
+      return { ...state, isRefreshing: state.isRefreshing ? false : true };
     case 'RESET':
       return initialState;
     default:

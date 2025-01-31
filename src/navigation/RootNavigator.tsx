@@ -7,23 +7,25 @@ import { useWallet } from '../contexts/WalletContext';
 import TransactionsScreen from '../screens/TransactionsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import { colors } from '../theme';
+import { ActivityScreen } from '../screens/ActivityScreen';
 
 export type RootStackParamList = {
   Home: undefined;
   ImportXPub: undefined;
   Transactions: undefined;
   Settings: undefined;
+  Activity: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
   const { state } = useWallet();
-
+console.log(state.isLoading)
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        {!state.xpubData ? (
+        {!state.xpubData  ? (
           <Stack.Screen 
             name="ImportXPub" 
             component={ImportXPubScreen} 
@@ -54,6 +56,18 @@ export function RootNavigator() {
                 },
                 headerTintColor: colors.text.primary,
               }} 
+            />
+            <Stack.Screen 
+              name="Activity" 
+              component={ActivityScreen}
+              options={{
+                headerShown: true,
+                title: 'Activity',
+                headerStyle: {
+                  backgroundColor: colors.background,
+                },
+                headerTintColor: colors.text.primary
+              }}
             />
           </>
         )}

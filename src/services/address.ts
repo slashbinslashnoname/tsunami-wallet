@@ -57,39 +57,43 @@ export const AddressService = {
     const node = bip32.fromBase58(xpub, network);
     const addresses: AddressData[] = [];
 
-    for (let i = startIndex; i < startIndex + count; i++) {
-      const child = node.derive(0).derive(i);
-      const pubkey = Buffer.from(child.publicKey);
-      
-      let address: string;
-      if (format === 'zpub') {
-        address = bitcoin.payments.p2wpkh({ 
-          pubkey, 
-          network: bitcoin.networks.bitcoin 
-        }).address!;
-      } else if (format === 'ypub') {
-        const p2wpkh = bitcoin.payments.p2wpkh({ 
-          pubkey, 
-          network: bitcoin.networks.bitcoin 
-        });
-        address = bitcoin.payments.p2sh({
-          redeem: p2wpkh,
-          network: bitcoin.networks.bitcoin
-        }).address!;
-      } else {
-        address = bitcoin.payments.p2pkh({ 
-          pubkey, 
-          network: bitcoin.networks.bitcoin 
-        }).address!;
-      }
+    // Derive both receiving (0) and change (1) addresses
+    for (const change of [0, 1]) {
+      for (let i = startIndex; i < startIndex + count; i++) {
+        const child = node.derive(change).derive(i);
+        const pubkey = Buffer.from(child.publicKey);
+        
+        let address: string;
+        if (format === 'zpub') {
+          address = bitcoin.payments.p2wpkh({ 
+            pubkey, 
+            network: bitcoin.networks.bitcoin 
+          }).address!;
+        } else if (format === 'ypub') {
+          const p2wpkh = bitcoin.payments.p2wpkh({ 
+            pubkey, 
+            network: bitcoin.networks.bitcoin 
+          });
+          address = bitcoin.payments.p2sh({
+            redeem: p2wpkh,
+            network: bitcoin.networks.bitcoin
+          }).address!;
+        } else {
+          address = bitcoin.payments.p2pkh({ 
+            pubkey, 
+            network: bitcoin.networks.bitcoin 
+          }).address!;
+        }
 
-      addresses.push({
-        address,
-        path: `0/${i}`,
-        balance: 0,
-        index: i,
-        transactions: []
-      });
+        addresses.push({
+          address,
+          path: `${change}/${i}`,
+          balance: 0,
+          index: i,
+          isChange: change === 1,
+          transactions: []
+        });
+      }
     }
 
     return addresses;
@@ -134,6 +138,7 @@ export const AddressService = {
 
   async getXpubTransactions(addresses: AddressData[]): Promise<Transaction[]> {
     try {
+      console.log("Pulling data from blockchain.info")
       const addressList = addresses.map(a => a.address);
       const url = `https://blockchain.info/multiaddr?active=${addressList.join('|')}&n=50`;
       const response = await fetch(url);

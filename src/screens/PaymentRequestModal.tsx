@@ -22,6 +22,8 @@ import { ExchangeService } from '../services/exchange';
 import { Button } from '../components/Button';
 import { colors, spacing, typography, shadows, layout, borderRadius } from '../theme';
 import { AddressService } from '../services/address';
+import { WebSocketService } from '../services/websocket';
+
 type Currency = 'BTC' | 'USD' | 'EUR';
 
 interface PaymentRequest {
@@ -51,6 +53,8 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
   });
   const [usedAddresses, setUsedAddresses] = useState<Set<string>>(new Set());
   const [currentAddress, setCurrentAddress] = useState<string | null>(null);
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+  const [currentTxId, setCurrentTxId] = useState<string | null>(null);
 
   const insets = useSafeAreaInsets();
 
@@ -111,8 +115,6 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
     if (!amount) return;
 
     // Mark this address as used in this session
-    setUsedAddresses(prev => new Set(prev).add(address));
-
     const paymentRequest: PaymentRequest = {
       address,
       amount: Number(amount),
@@ -194,16 +196,133 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
     setAmount(newAmount);
   }
 
-  // Reset used addresses when modal is closed
-  useEffect(() => {
-    return () => {
-      setUsedAddresses(new Set());
-    };
-  }, []);
 
   useEffect(() => {
     getNextUnusedAddress().then(setCurrentAddress);
   }, [walletState.index]);
+
+  useEffect(() => {
+    if (qrData && currentAddress) {
+      const handleTransaction = (tx: Transaction) => {
+        const isPaymentToUs = tx.addresses.includes(currentAddress);
+        const isCorrectAmount = Math.abs(tx.amount - Number(amount)) < 0.00000001; // Account for floating point
+
+        if (isPaymentToUs && isCorrectAmount) {
+          setCurrentTxId(tx.txid);
+          setPaymentConfirmed(true);
+          // Optional: Auto close after delay
+          setTimeout(() => onClose(), 3000);
+        }
+      };
+
+      WebSocketService.subscribe(handleTransaction);
+      return () => WebSocketService.unsubscribe(handleTransaction);
+    }
+  }, [qrData, currentAddress, amount]);
+
+  // Add confirmation UI
+  const renderContent = () => {
+    if (paymentConfirmed) {
+      return (
+        <View style={styles.confirmationContainer}>
+          <MaterialCommunityIcons 
+            name="check-circle" 
+            size={64} 
+            color={colors.success} 
+          />
+          <Text style={styles.confirmationText}>Payment Received!</Text>
+          <Text style={styles.txIdText}>{currentTxId}</Text>
+        </View>
+      );
+    }
+    
+    return (
+      <ScrollView 
+        style={styles.scrollView}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.card}>
+          <View style={styles.amountContainer}>
+            <Text style={styles.currencySymbol}>
+              {currency === 'USD' ? '$' : currency === 'EUR' ? '€' : '₿'}
+            </Text>
+            <TextInput
+              style={styles.input}
+              placeholder="0.00"
+              value={amount}
+              onChangeText={handleAmountChange}
+              keyboardType="decimal-pad"
+              placeholderTextColor={colors.text.secondary}
+              autoFocus
+            />
+          </View>
+
+          <View style={styles.currencySelector}>
+            {(['BTC', 'USD', 'EUR'] as Currency[]).map((curr) => (
+              <Pressable
+                key={curr}
+                style={[
+                  styles.currencyButton,
+                  currency === curr && styles.currencyButtonActive
+                ]}
+                onPress={() => handleCurrencyChange(curr)}
+              >
+                <Text style={[
+                  styles.currencyText,
+                  currency === curr && styles.currencyTextActive
+                ]}>
+                  {curr}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+
+          {amount && Object.entries(convertedAmounts)
+            .filter(([curr]) => curr !== currency)
+            .map(([curr, value]) => (
+              <Text key={curr} style={styles.conversion}>
+                ≈ {curr === 'USD' ? '$' : curr === 'EUR' ? '€' : '₿'}{value} {curr}
+              </Text>
+            ))}
+        </View>
+
+        {qrData ? (
+          <View style={styles.qrCard}>
+            <QRCode
+              value={qrData}
+              size={240}
+              backgroundColor={colors.white}
+              color={colors.black}
+            />
+            <Pressable 
+              style={styles.addressContainer}
+              onPress={async () => {
+                if (currentAddress) {
+                  await copyToClipboard(currentAddress);
+                }
+              }}
+            >
+              <Text style={styles.address} numberOfLines={1}>
+                {currentAddress || 'No address available'}
+              </Text>
+              <MaterialCommunityIcons 
+                name={copied ? "check" : "content-copy"} 
+                size={20} 
+                color={copied ? colors.success : colors.text.secondary} 
+              />
+            </Pressable>
+          </View>
+        ) : (
+          <Button
+            title="Generate Request"
+            onPress={handleGenerateRequest}
+            disabled={!amount || !currentAddress}
+          />
+        )}
+      </ScrollView>
+    );
+  };
 
   return (
     <Modal
@@ -243,90 +362,7 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
             </Pressable>
           </View>
 
-          <ScrollView 
-            style={styles.scrollView}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-          >
-            <View style={styles.card}>
-              <View style={styles.amountContainer}>
-                <Text style={styles.currencySymbol}>
-                  {currency === 'USD' ? '$' : currency === 'EUR' ? '€' : '₿'}
-                </Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="0.00"
-                  value={amount}
-                  onChangeText={handleAmountChange}
-                  keyboardType="decimal-pad"
-                  placeholderTextColor={colors.text.secondary}
-                  autoFocus
-                />
-              </View>
-
-              <View style={styles.currencySelector}>
-                {(['BTC', 'USD', 'EUR'] as Currency[]).map((curr) => (
-                  <Pressable
-                    key={curr}
-                    style={[
-                      styles.currencyButton,
-                      currency === curr && styles.currencyButtonActive
-                    ]}
-                    onPress={() => handleCurrencyChange(curr)}
-                  >
-                    <Text style={[
-                      styles.currencyText,
-                      currency === curr && styles.currencyTextActive
-                    ]}>
-                      {curr}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-
-              {amount && Object.entries(convertedAmounts)
-                .filter(([curr]) => curr !== currency)
-                .map(([curr, value]) => (
-                  <Text key={curr} style={styles.conversion}>
-                    ≈ {curr === 'USD' ? '$' : curr === 'EUR' ? '€' : '₿'}{value} {curr}
-                  </Text>
-                ))}
-            </View>
-
-            {qrData ? (
-              <View style={styles.qrCard}>
-                <QRCode
-                  value={qrData}
-                  size={240}
-                  backgroundColor={colors.white}
-                  color={colors.black}
-                />
-                <Pressable 
-                  style={styles.addressContainer}
-                  onPress={async () => {
-                    if (currentAddress) {
-                      await copyToClipboard(currentAddress);
-                    }
-                  }}
-                >
-                  <Text style={styles.address} numberOfLines={1}>
-                    {currentAddress || 'No address available'}
-                  </Text>
-                  <MaterialCommunityIcons 
-                    name={copied ? "check" : "content-copy"} 
-                    size={20} 
-                    color={copied ? colors.success : colors.text.secondary} 
-                  />
-                </Pressable>
-              </View>
-            ) : (
-              <Button
-                title="Generate Request"
-                onPress={handleGenerateRequest}
-                disabled={!amount || !currentAddress}
-              />
-            )}
-          </ScrollView>
+          {renderContent()}
         </Animated.View>
       </KeyboardAvoidingView>
     </Modal>
@@ -455,5 +491,20 @@ const styles = StyleSheet.create({
   },
   generateButton: {
     marginTop: spacing.md,
+  },
+  confirmationContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.xl,
+  },
+  confirmationText: {
+    ...typography.heading,
+    color: colors.success,
+    marginTop: spacing.md,
+  },
+  txIdText: {
+    ...typography.caption,
+    color: colors.text.secondary,
+    marginTop: spacing.sm,
   },
 }); 

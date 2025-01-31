@@ -26,6 +26,7 @@ export interface AddressData {
   path: string;
   index: number;
   balance: number;
+  isChange: boolean;
   transactions: Transaction[];
 }
 
