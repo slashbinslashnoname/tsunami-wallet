@@ -51,7 +51,6 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
     USD: '',
     EUR: '',
   });
-  const [usedAddresses, setUsedAddresses] = useState<Set<string>>(new Set());
   const [currentAddress, setCurrentAddress] = useState<string | null>(null);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [currentTxId, setCurrentTxId] = useState<string | null>(null);
@@ -90,7 +89,7 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
 
   async function getNextUnusedAddress(): Promise<string | null> {
     if (!walletState.xpubData) return null;
-    const addresses = await AddressService.deriveAddresses(walletState.xpubData, walletState.index, 1);
+    const addresses = await AddressService.deriveAddresses(walletState.xpubData, walletState.index-1, 1);
     return addresses[0].address;
   }
 

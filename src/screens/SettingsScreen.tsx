@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text, Alert, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useWallet } from '../contexts/WalletContext';
@@ -9,10 +9,26 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/RootNavigator';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { AddressService } from '../services/address';
 
 export default function SettingsScreen() {
-  const { dispatch: walletDispatch } = useWallet();
+  const { state: walletState, dispatch: walletDispatch } = useWallet();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const [nextAddress, setNextAddress] = useState('No address');
+  const [currentAddress, setCurrentAddress] = useState('No address');
+
+  useEffect(() => {
+    async function loadNextAddress() {
+      if (!walletState.xpubData) return;
+      // current address is the address at the index - 1
+      const addresses = await AddressService.deriveAddresses(walletState.xpubData, walletState.index-1, 1);
+      setCurrentAddress(addresses[0].address);
+      // next address is the address at the index
+      const nextAddresses = await AddressService.deriveAddresses(walletState.xpubData, walletState.index, 1);
+      setNextAddress(nextAddresses[0].address);
+    }
+    loadNextAddress();
+    }, [walletState.xpubData, walletState.index]);
 
   const handleReset = () => {
     Alert.alert(
@@ -36,6 +52,13 @@ export default function SettingsScreen() {
     );
   };
 
+  const formatAddress = (address: string) => {
+    if (address.length > 16) {
+      return `${address.slice(0, 8)}...${address.slice(-8)}`;
+    }
+    return address;
+  };
+
   const settingsItems = [
     {
       icon: 'bell-outline',
@@ -43,7 +66,28 @@ export default function SettingsScreen() {
       onPress: () => navigation.navigate('Activity'),
       showChevron: true
     },
+    {
+      icon: 'key-outline',
+      title: `Current Index: ${walletState.index}`,
+      onPress: () => {},
+      showChevron: false
+    },
+    {
+      icon: 'wallet-outline',
+      title: `Current Address :`,
+      subtitle: formatAddress(currentAddress),
+      onPress: () => {},
+      showChevron: false
+    },
+    {
+      icon: 'wallet-plus-outline',
+      title: 'Next Address',
+      subtitle: formatAddress(nextAddress),
+      onPress: () => {},
+      showChevron: false
+    },
   ];
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -62,7 +106,14 @@ export default function SettingsScreen() {
                 size={24} 
                 color={colors.text.primary} 
               />
-              <Text style={styles.settingText}>{item.title}</Text>
+              <View>
+                <Text style={styles.settingText}>{item.title}</Text>
+                {item.subtitle && (
+                  <Text style={styles.settingSubtext} numberOfLines={1}>
+                    {item.subtitle}
+                  </Text>
+                )}
+              </View>
             </View>
             {item.showChevron && (
               <MaterialCommunityIcons 
@@ -86,6 +137,7 @@ export default function SettingsScreen() {
   );
 }
 
+ 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -116,4 +168,10 @@ const styles = StyleSheet.create({
     ...typography.body,
     marginLeft: spacing.md,
   },
-}); 
+  settingSubtext: {
+    ...typography.caption,
+    color: colors.text.secondary,
+    marginTop: spacing.xs,
+    marginLeft: spacing.md,
+  },
+});

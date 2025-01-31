@@ -1,22 +1,29 @@
-import React, { useState, useContext } from 'react';
-
 export const colors = {
-  
-    primary: '#1E88E5',
-    background: '#F5F5F5',
-    card: {
-      background: '#FFFFFF',
-      border: '#E0E0E0',
-    },
-    text: {
-      primary: '#212121',
-      secondary: '#757575',
-    },
-    success: '#4CAF50',
-    error: '#F44336',
-    shadow: '#000000',
-    white: '#FFFFFF',
-    black: '#000000',
+  primary: '#8B1E3F',
+  secondary: '#641220',
+  background: '#F8F9FB',
+  surface: '#FFFFFF',
+  white: '#FFFFFF',
+  black: '#000000',
+  text: {
+    primary: '#1A1A1A',
+    secondary: '#71717A',
+    disabled: '#A1A1AA',
+  },
+  border: '#E4E4E7',
+  error: '#EF4444',
+  success: '#10B981',
+  accent: {
+    red: '#8B1E3F',
+    darkRed: '#641220',
+    wine: '#4A0F20',
+    burgundy: '#2E0A14',
+  },
+  card: {
+    background: '#FFFFFF',
+    border: '#F4F4F5',
+    shadow: 'rgba(0, 0, 0, 0.05)',
+  },
 };
 
 export const spacing = {
@@ -112,33 +119,4 @@ export const layout = {
     alignItems: 'center',
     justifyContent: 'center',
   },
-};
-
-// Add theme context
-export const ThemeContext = React.createContext({
-  isDark: false,
-  toggleTheme: () => {},
-});
-
-// Add theme provider
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [isDark, setIsDark] = useState(false);
-  const theme = isDark ? colors.dark : colors.light;
-
-  const toggleTheme = () => {
-    setIsDark(!isDark);
-  };
-
-  return (
-    <ThemeContext.Provider value={{ isDark, toggleTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  );
-}
-
-// Add theme hook
-export function useTheme() {
-  const { isDark, toggleTheme } = useContext(ThemeContext);
-  const theme = isDark ? colors.dark : colors.light;
-  return { theme, isDark, toggleTheme };
-} 
+}; 
