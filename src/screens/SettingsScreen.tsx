@@ -12,6 +12,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AddressService } from '../services/address';
 import { formatAddress } from '../utils/bitcoin';
 import { useThemeMode } from '../contexts/ThemeContext';
+import i18n from '../i18n';
+import Clipboard from 'expo-clipboard';
 
 export default function SettingsScreen() {
   const colorScheme = useColorScheme();
@@ -21,6 +23,7 @@ export default function SettingsScreen() {
   const [nextAddress, setNextAddress] = useState('No address');
   const [currentAddress, setCurrentAddress] = useState('No address');
   const theme = themeMode === 'dark' ? colors.dark : colors.light;
+  const [showSeed, setShowSeed] = useState(false);
 
   useEffect(() => {
     async function loadNextAddress() {
@@ -85,6 +88,26 @@ export default function SettingsScreen() {
     );
   };
 
+  const handleExportSeed = () => {
+    if (!walletState.xpubData?.mnemonic) {
+      Alert.alert(i18n.t('settings.noSeedStored'));
+      return;
+    }
+
+    Alert.alert(
+      i18n.t('settings.exportSeed'),
+      i18n.t('settings.confirmExport'),
+      [
+        { text: i18n.t('common.cancel'), style: 'cancel' },
+        { 
+          text: i18n.t('common.confirm'),
+          onPress: () => setShowSeed(true)
+        }
+      ]
+    );
+  };
+
+
   const settingsItems = [
     {
       icon: 'bell-outline',
@@ -121,6 +144,12 @@ export default function SettingsScreen() {
           ? 'Dark Mode' 
           : 'Light Mode',
       onPress: handleThemePress,
+      showChevron: true
+    },
+    {
+      icon: 'key',
+      title: i18n.t('settings.exportSeed'),
+      onPress: handleExportSeed,
       showChevron: true
     },
   ];
@@ -166,6 +195,25 @@ export default function SettingsScreen() {
     },
     scrollContent: {
       flexGrow: 1,
+    },
+    seedContainer: {
+      backgroundColor: theme.surface,
+      padding: spacing.md,
+      borderRadius: 8,
+      marginTop: spacing.sm,
+    },
+    seedRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+    },
+    seedText: {
+      ...typography(theme).body,
+      color: theme.text.primary,
+      flex: 1,
+    },
+    copyButton: {
+      padding: spacing.xs,
+      marginLeft: spacing.xs,
     },
   });
 
@@ -213,8 +261,16 @@ export default function SettingsScreen() {
                   )}
                 </TouchableOpacity>
               ))}
+               {showSeed && walletState.xpubData?.mnemonic && (
+              <View style={styles.seedContainer}>
+                <View style={styles.seedRow}>
+                  <Text style={styles.seedText}>{walletState.xpubData.mnemonic}</Text>
+                </View>
+              </View>
+            )}
             </View>
 
+           
             <View style={styles.section}>
               <Button
                 title="Reset Wallet"
@@ -222,6 +278,7 @@ export default function SettingsScreen() {
                 variant="secondary"
               />
             </View>
+
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

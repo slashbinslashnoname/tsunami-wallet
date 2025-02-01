@@ -3,6 +3,7 @@ export interface XPubData {
   format: 'xpub' | 'ypub' | 'zpub';
   derivationPath: string;
   network: 'mainnet' | 'testnet';
+  mnemonic?: string; // Optional mnemonic for seed backup
 }
 
 export interface Balance {

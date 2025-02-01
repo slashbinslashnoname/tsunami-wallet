@@ -98,7 +98,7 @@ export const XPubService = {
     const account = root.derivePath(path);
     const xpub = account.neutered().toBase58();
 
-    // Convert to zpub
+    // Convert to zpub format if it's not already
     return this.convertToXPub(xpub);
   },
 }; 
