@@ -10,7 +10,6 @@ interface WalletState {
   addresses: AddressData[];
   isLoading: boolean;
   xpubData: XPubData | null;
-  error: string | null;
   index: number;
   isRefreshing: boolean;
 }
@@ -22,21 +21,22 @@ type WalletAction =
   | { type: 'SET_ADDRESSES'; payload: AddressData[] }
   | { type: 'SET_INDEX'; payload: number }
   | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'SET_ERROR'; payload: string | null }
   | { type: 'SET_REFRESHING'; payload: boolean }
   | { type: 'REFRESH' }
   | { type: 'RESET' }
   | { type: 'ADD_TRANSACTION'; payload: Transaction };
 
 const initialState: WalletState = {
+  xpubData: null,
+  balance: {
+    confirmed: 0,
+    unconfirmed: 0
+  },
   transactions: [],
   addresses: [],
-  balance: { confirmed: 0, unconfirmed: 0, total: 0 },
+  index: 0,
   isLoading: true,
   isRefreshing: false,
-  index: 0,
-  xpubData: null,
-  error: null
 };
 
 const WalletContext = createContext<{
@@ -49,7 +49,15 @@ function walletReducer(state: WalletState, action: WalletAction): WalletState {
     case 'SET_XPUB':
       return { ...state, xpubData: action.payload };
     case 'SET_BALANCE':
-      return { ...state, balance: action.payload };
+      return {
+        ...state,
+        balance: {
+          confirmed: action.payload.confirmed,
+          unconfirmed: action.payload.unconfirmed + state.transactions
+            .filter(tx => tx.status === 'pending' && tx.type === 'incoming')
+            .reduce((sum, tx) => sum + tx.amount, 0)
+        }
+      };
     case 'SET_TRANSACTIONS':
       return { ...state, transactions: action.payload };
     case 'SET_ADDRESSES':
@@ -58,8 +66,6 @@ function walletReducer(state: WalletState, action: WalletAction): WalletState {
       return { ...state, index: action.payload };
     case 'SET_LOADING':
       return { ...state, isLoading: action.payload };
-    case 'SET_ERROR':
-      return { ...state, error: action.payload };
     case 'SET_REFRESHING':
       return { ...state, isRefreshing: action.payload };
     case 'REFRESH':
@@ -67,7 +73,22 @@ function walletReducer(state: WalletState, action: WalletAction): WalletState {
     case 'RESET':
       return initialState;
     case 'ADD_TRANSACTION':
-      return { ...state, transactions: [...state.transactions, action.payload] };
+      const isIncoming = action.payload.type === 'incoming';
+      const amount = action.payload.amount;
+      const isConfirmed = action.payload.confirmations > 0;
+
+      return {
+        ...state,
+        transactions: [action.payload, ...state.transactions],
+        balance: {
+          confirmed: isConfirmed ? 
+            state.balance.confirmed + (isIncoming ? amount : -amount) : 
+            state.balance.confirmed,
+          unconfirmed: !isConfirmed && isIncoming ? 
+            state.balance.unconfirmed + amount : 
+            state.balance.unconfirmed
+        }
+      };
     default:
       return state;
   }
@@ -88,8 +109,6 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         await refreshWalletData(xpubData.xpub);
       }
     } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to load wallet data' });
-    } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
   }
@@ -102,7 +121,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       updateWalletState(allAddresses, allTransactions, lastIndex);
     } catch (error) {
       console.error('Error refreshing wallet data:', error);
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to refresh wallet data' });
+      dispatch({ type: 'SET_LOADING', payload: false });
     } finally {
       dispatch({ type: 'SET_REFRESHING', payload: false });
     }
@@ -170,7 +189,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'SET_TRANSACTIONS', payload: allTransactions });
 
     const { confirmed, unconfirmed } = calculateTotalBalance(allTransactions);
-    dispatch({ type: 'SET_BALANCE', payload: { confirmed, unconfirmed, total: confirmed + unconfirmed } });
+    dispatch({ type: 'SET_BALANCE', payload: { confirmed, unconfirmed } });
   }
 
   function calculateTotalBalance(transactions: Transaction[]) {

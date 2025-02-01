@@ -100,7 +100,19 @@ export function ActivityScreen() {
 
   useEffect(() => {
     const handleNewTransaction = (tx: Transaction) => {
-        setRecentTransactions(prev => [tx, ...prev]);
+      // Add transaction to state
+      setRecentTransactions(prev => [tx, ...prev]);
+
+      // Add transaction to wallet context with proper status
+      dispatch({
+        type: 'ADD_TRANSACTION',
+        payload: {
+          ...tx,
+          status: tx.confirmations > 0 ? 'confirmed' : 'pending',
+          type: 'incoming',
+          amount: tx.amount
+        }
+      });
     };
 
     WebSocketService.subscribe(handleNewTransaction);

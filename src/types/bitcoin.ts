@@ -8,7 +8,6 @@ export interface XPubData {
 export interface Balance {
   confirmed: number;
   unconfirmed: number;
-  total: number;
 }
 
 export interface Transaction {

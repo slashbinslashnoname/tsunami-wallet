@@ -18,6 +18,7 @@ import { BitcoinIllustration } from '../components/BitcoinIllustration';
 import { AddressService } from '../services/address';
 import { useThemeMode } from '../contexts/ThemeContext';
 import { colors } from '../theme';
+import i18n from '../i18n';
 
 export default function ImportXPubScreen() {
   const { themeMode } = useThemeMode();
@@ -43,12 +44,15 @@ export default function ImportXPubScreen() {
         };
         dispatch({ type: 'SET_XPUB', payload: xpubData });
       } else {
-        throw new Error('Invalid xpub or mnemonic');
+        throw new Error(i18n.t('import.invalidInput'));
       }
       dispatch({ type: 'SET_LOADING', payload: false });
       dispatch({ type: 'REFRESH' });
     } catch (error) {
-      Alert.alert('Error', error instanceof Error ? error.message : 'Unknown error occurred');
+      Alert.alert(
+        i18n.t('common.error'), 
+        error instanceof Error ? error.message : i18n.t('common.error')
+      );
     } finally {
       setIsLoading(false);
     }
@@ -89,6 +93,12 @@ export default function ImportXPubScreen() {
       padding: 32,
       color: theme.text.secondary,
     },
+    title: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      marginBottom: 20,
+      color: theme.text.primary,
+    },
   }); 
 
   return (
@@ -103,9 +113,10 @@ export default function ImportXPubScreen() {
         >
           <BitcoinIllustration />
           <View style={styles.content}>
+            <Text style={styles.title}>{i18n.t('import.title')}</Text>
             <TextInput
               style={styles.input}
-              placeholder="Enter xpub/ypub/zpub or mnemonic"
+              placeholder={i18n.t('import.placeholder')}
               placeholderTextColor={theme.text.secondary}
               value={xpubInput}
               onChangeText={setXpubInput}
@@ -114,7 +125,7 @@ export default function ImportXPubScreen() {
             />
             <View style={styles.buttonContainer}>
               <Button
-                title="Import"
+                title={i18n.t('import.import')}
                 onPress={handleImport}
                 isLoading={isLoading}
                 disabled={!XPubService.validateFormat(xpubInput.trim()) && !XPubService.validateMnemonic(xpubInput.trim())}

@@ -58,11 +58,11 @@ export const WebSocketService = {
     return {
       txid: tx.hash || '',
       amount: outputValue / 1e8,
-      confirmations: tx.block_height ? 1 : 0,
+      confirmations: 0, // New transactions are always unconfirmed
       timestamp: Date.now(),
       type: 'incoming',
       addresses: [...inputAddresses, ...outputAddresses],
-      status: tx.block_height ? 'confirmed' : 'pending'
+      status: 'pending'
     };
   },
 

@@ -5,18 +5,18 @@ import { colors, spacing, typography, shadows, borderRadius, layout } from '../t
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useThemeMode } from '../contexts/ThemeContext';
+import i18n from '../i18n';
+import { Balance } from '../types/bitcoin';
+
 interface BalanceCardProps {
-  balance: {
-    confirmed: number;
-    unconfirmed: number;
-    total: number;
-  };
+  balance: Balance;
 }
 
 export function BalanceCard({ balance }: BalanceCardProps) {
   const { themeMode } = useThemeMode();
   const theme = themeMode === 'dark' ? colors.dark : colors.light;
   const navigation = useNavigation<StackNavigationProp<any>>();
+  const totalBalance = balance.confirmed + balance.unconfirmed;
 
   const styles = StyleSheet.create({
     container: {
@@ -76,11 +76,19 @@ export function BalanceCard({ balance }: BalanceCardProps) {
       justifyContent: 'center',
       alignItems: 'center',
     },
+    title: {
+      ...typography(theme).heading,
+      marginBottom: spacing.sm,
+    },
+    unconfirmed: {
+      ...typography(theme).caption,
+      marginTop: spacing.xs,
+    },
   }); 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.label}>Total Balance</Text>
+        <Text style={styles.label}>{i18n.t('home.totalBalance')}</Text>
         <TouchableOpacity 
           style={styles.settingsButton} 
           onPress={() => navigation.navigate('Settings')}
@@ -89,9 +97,13 @@ export function BalanceCard({ balance }: BalanceCardProps) {
         </TouchableOpacity>
       </View>
       
-      <Text style={styles.balance}>
-        ₿ {balance.total.toFixed(8)}
-      </Text>
+      <Text style={styles.balance}>₿ {totalBalance.toFixed(8)}</Text>
+      
+      {balance.unconfirmed > 0 && (
+        <Text style={styles.unconfirmed}>
+          {i18n.t('home.pendingBalance', { amount: balance.unconfirmed.toFixed(8) })}
+        </Text>
+      )}
       
       <View style={styles.details}>
         <View style={styles.detailItem}>
@@ -108,5 +120,4 @@ export function BalanceCard({ balance }: BalanceCardProps) {
       </View>
     </View>
   );
-
 }

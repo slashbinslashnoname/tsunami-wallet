@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, StyleSheet, Image, Text, Button } from 'react-native';
+import { View, StyleSheet, Image, Text } from 'react-native';
 import { useThemeMode } from '../contexts/ThemeContext';
 import { colors } from '../theme';
+import i18n from '../i18n';
 
 export function BitcoinIllustration() {
   const { themeMode } = useThemeMode();
@@ -33,12 +34,12 @@ const styles = StyleSheet.create({
 }); 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome to Tsunami</Text>
+      <Text style={styles.title}>{i18n.t('welcome.title')}</Text>
       <Image 
         source={require('../../assets/logo-debut.png')} 
         style={styles.image}
       />
-      <Text style={styles.subtitle}>Accept Bitcoin in your shop</Text>
+      <Text style={styles.subtitle}>{i18n.t('welcome.subtitle')}</Text>
     </View>
   );
 }
