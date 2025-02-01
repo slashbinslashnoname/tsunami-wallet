@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Tsunami-v3",
-    "slug": "Tsunami-v3",
+    "name": "Tsunami Wallet",
+    "slug": "Tsunami-wallet",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.slashbin.Tsunamiv3"
+      "bundleIdentifier": "com.slashbin.TsunamiWallet"
     },
     "android": {
       "adaptiveIcon": {
@@ -24,7 +24,7 @@
       "permissions": [
         "android.permission.CAMERA"
       ],
-      "package": "com.slashbin.Tsunamiv3"
+      "package": "com.slashbin.TsunamiWallet"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -32,6 +32,11 @@
     "plugins": [
       "expo-barcode-scanner",
       "expo-secure-store"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "d8055693-6370-4bef-80f2-a3db3bc7a31c"
+      }
+    }
   }
 }

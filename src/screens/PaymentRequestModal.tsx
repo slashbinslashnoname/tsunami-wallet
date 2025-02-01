@@ -99,7 +99,7 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
     const btcAmount = currency === 'BTC' 
       ? Number(amount)
       : ExchangeService.convertToBTC(Number(amount), rates[currency]);
-    console.log(amount);
+
     // Format BTC amount with exactly 8 decimal places, no grouping
     const formattedAmount = btcAmount.toLocaleString('en-US', {
       minimumFractionDigits: 8,
