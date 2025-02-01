@@ -395,64 +395,66 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
 
   return (
     <Modal
-      animationType="fade"
+      animationType="slide"
       transparent={true}
       visible={true}
       onRequestClose={onClose}
     >
       <KeyboardAvoidingView 
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.modalContainer}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardView}
       >
-        <Pressable style={styles.backdrop} onPress={onClose} />
-        <Animated.View 
-          style={[
-            styles.modalContent,
-            { 
-              transform: [{ translateY: slideAnim }],
-              paddingBottom: insets.bottom
-            }
-          ]}
-        >
-          <View style={styles.handle} />
-          
-          <View style={styles.header}>
-            <Text style={styles.title}>Request Payment</Text>
-            <Pressable 
-              style={styles.closeButton} 
-              onPress={onClose}
-              hitSlop={8}
-            >
-              <MaterialCommunityIcons 
-                name="close" 
-                size={24} 
-                color={colors.text.secondary} 
-              />
-            </Pressable>
-          </View>
+        <View style={styles.modalContainer}>
+          <ScrollView 
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.modalContent}>
+              <View style={styles.handle} />
+              
+              <View style={styles.header}>
+                <Text style={styles.title}>Request Payment</Text>
+                <Pressable 
+                  style={styles.closeButton} 
+                  onPress={onClose}
+                  hitSlop={8}
+                >
+                  <MaterialCommunityIcons 
+                    name="close" 
+                    size={24} 
+                    color={colors.text.secondary} 
+                  />
+                </Pressable>
+              </View>
 
-          {renderContent()}
-        </Animated.View>
+              {renderContent()}
+            </View>
+          </ScrollView>
+        </View>
       </KeyboardAvoidingView>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  modalContainer: {
+  keyboardView: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: 'flex-end',
   },
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
+  modalContainer: {
+    flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
   },
   modalContent: {
     backgroundColor: colors.background,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: '90%',
-    ...shadows.large,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: spacing.md,
+    minHeight: '50%',
   },
   handle: {
     width: 32,
