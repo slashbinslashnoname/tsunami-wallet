@@ -90,7 +90,7 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
 
   async function getNextUnusedAddress(): Promise<string | null> {
     if (!walletState.xpubData) return null;
-    const addresses = await AddressService.deriveAddresses(walletState.xpubData, walletState.index-1, 1);
+    const addresses = await AddressService.deriveAddresses(walletState.xpubData, walletState.index, 1);
     return addresses[0].address;
   }
 
@@ -107,7 +107,6 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
       useGrouping: false,
       style: 'decimal' // Ensure decimal format
     }).replace(/[^\d.]/g, ''); // Remove any non-digit characters except decimal point
-    console.log(formattedAmount);
     // Construct the BIP21 URI
     return `bitcoin:${paymentRequest.address}?amount=${formattedAmount}`;
   }
