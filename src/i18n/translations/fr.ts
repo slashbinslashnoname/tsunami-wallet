@@ -7,6 +7,7 @@ export default {
     confirm: 'Confirmer',
     verify: 'Vérifier',
     copy: 'Copier',
+    back: 'Retour',
   },
   home: {
     title: 'Portefeuille Bitcoin',
@@ -49,7 +50,7 @@ export default {
     generateSeed: 'Nouveau Wallet',
     backupSeed: 'Sauvegardez votre phrase de récupération',
     seedWarning: 'Notez ces 24 mots dans l\'ordre. Ne les partagez jamais.',
-    verifySeed: 'Vérifier la phrase de récupération',
+    verifySeed: 'Vérifier',
     enterSeed: 'Entrez votre phrase de récupération pour vérifier',
     seedMismatch: 'La phrase de récupération ne correspond pas',
     copySeed: 'Copier la phrase',

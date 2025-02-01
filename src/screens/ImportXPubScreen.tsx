@@ -8,7 +8,6 @@ import {
   Platform,
   ScrollView,
   Text,
-  Clipboard,
   TouchableOpacity
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,11 +18,12 @@ import { Button } from '../components/Button';
 import { BitcoinIllustration } from '../components/BitcoinIllustration';
 import { AddressService } from '../services/address';
 import { useThemeMode } from '../contexts/ThemeContext';
-import { colors, spacing, typography } from '../theme';
+import { shadows, colors, spacing, typography } from '../theme';
 import i18n from '../i18n';
 import * as bip39 from 'bip39';
 import { SeedVerification } from '../components/SeedVerification';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
 
 export default function ImportXPubScreen() {
   const { themeMode } = useThemeMode();
@@ -44,7 +44,7 @@ export default function ImportXPubScreen() {
         const xpub = await XPubService.mnemonicToXpub(xpubInput.trim());
         xpubData = {
           xpub,
-          format: 'zpub',
+          format: 'zpub' as const,
           network: 'mainnet' as const,
           derivationPath: "m/84'/0'/0'",
           mnemonic: xpubInput.trim()
@@ -77,7 +77,7 @@ export default function ImportXPubScreen() {
         format: AddressService.detectXpubFormat(xpub),
         network: 'mainnet' as const,
         derivationPath: "m/84'/0'/0'",
-        mnemonic: generatedSeed
+        mnemonic: generatedSeed || undefined
       };
       await StorageService.saveXPubData(xpubData);
       dispatch({ type: 'SET_XPUB', payload: xpubData });
@@ -114,18 +114,18 @@ export default function ImportXPubScreen() {
       justifyContent: 'center',
     },
     input: {
-      borderWidth: 1,
-      borderColor: theme.border,
       borderRadius: 8,
       padding: 12,
       marginBottom: 20,
       minHeight: 100,
       textAlignVertical: 'top',
       color: theme.text.primary,
+      backgroundColor: theme.white,
+      ...shadows(theme).medium,
     },
     buttonContainer: {
       flexDirection: 'row',
-      justifyContent: 'center',
+      justifyContent: 'space-between',
     },
     centerText: {
       fontSize: 18,
@@ -142,6 +142,8 @@ export default function ImportXPubScreen() {
       backgroundColor: theme.surface,
       padding: spacing.md,
       borderRadius: 8,
+      ...shadows(theme).medium,
+      
       marginBottom: spacing.lg,
     },
     seedRow: {
@@ -160,7 +162,7 @@ export default function ImportXPubScreen() {
     },
     warning: {
       ...typography(theme).caption,
-      color: theme.warning,
+      color: theme.text.secondary,
       marginBottom: spacing.md,
     },
   }); 
@@ -172,7 +174,6 @@ export default function ImportXPubScreen() {
           seed={generatedSeed}
           onVerified={handleVerified}
           onCancel={() => {
-            setGeneratedSeed(null);
             setIsVerifying(false);
           }}
         />
@@ -200,11 +201,20 @@ export default function ImportXPubScreen() {
                 />
               </TouchableOpacity>
             </View>
-            <Button
-              title={i18n.t('import.verifySeed')}
-              onPress={() => setIsVerifying(true)}
-            />
+           
           </View>
+          <View style={styles.buttonContainer}>
+              <Button 
+                title={i18n.t('common.back')}
+                variant="secondary"
+                onPress={() => setGeneratedSeed(null)}
+              />
+              <Button
+                title={i18n.t('import.verifySeed')}
+                onPress={() => setIsVerifying(true)}
+              />
+            </View>
+            
         </ScrollView>
       </SafeAreaView>
     );

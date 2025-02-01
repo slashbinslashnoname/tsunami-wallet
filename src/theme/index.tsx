@@ -39,7 +39,7 @@ export const colors = {
     card: {
       background: '#FFFFFF',
       border: '#F4F4F5',
-      shadow: 'rgba(0, 0, 0, 0.05)',
+      shadow: 'rgba(0, 0, 0, 0.3)',
     },
   },
   dark: {
@@ -59,7 +59,7 @@ export const colors = {
     card: {
       background: '#1E1E1E',
       border: '#2C2C2C',
-      shadow: 'rgba(0, 0, 0, 0.2)',
+      shadow: 'rgba(0, 0, 0, 0.3)',
     },
   }
 };

@@ -7,6 +7,7 @@ export default {
     confirm: 'Confirm',
     verify: 'Verify',
     copy: 'Copy',
+    back: 'Back',
   },
   home: {
     title: 'Bitcoin Wallet',

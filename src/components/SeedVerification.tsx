@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput } from 'react-native';
 import { Button } from './Button';
-import { colors, spacing, typography } from '../theme';
+import { colors, spacing, shadows } from '../theme';
 import i18n from '../i18n';
 import { useThemeMode } from '../contexts/ThemeContext';
 
@@ -29,19 +29,27 @@ export function SeedVerification({ seed, onVerified, onCancel }: Props) {
     container: {
       padding: spacing.md,
     },
-    title: {
-      ...typography(theme).heading,
-      marginBottom: spacing.md,
+    content: {
+      padding: 20,
+      flex: 1,
+      justifyContent: 'center',
     },
+    title: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      marginBottom: 20,
+      color: theme.text.primary,
+    },
+
     input: {
-      borderWidth: 1,
-      borderColor: theme.border,
       borderRadius: 8,
       padding: spacing.sm,
       marginBottom: spacing.md,
       minHeight: 100,
       textAlignVertical: 'top',
       color: theme.text.primary,
+      backgroundColor: theme.white,
+      ...shadows(theme).medium,
     },
     error: {
       color: theme.error,
@@ -56,6 +64,7 @@ export function SeedVerification({ seed, onVerified, onCancel }: Props) {
 
   return (
     <View style={styles.container}>
+      <View style={styles.content}></View>
       <Text style={styles.title}>{i18n.t('import.verifySeed')}</Text>
       <TextInput
         style={styles.input}
@@ -68,7 +77,7 @@ export function SeedVerification({ seed, onVerified, onCancel }: Props) {
       {error && <Text style={styles.error}>{error}</Text>}
       <View style={styles.buttonContainer}>
         <Button 
-          title={i18n.t('common.cancel')} 
+          title={i18n.t('common.back')} 
           onPress={onCancel}
           variant="secondary"
         />
