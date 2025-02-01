@@ -37,9 +37,9 @@ export default {
   },
   import: {
     title: 'Import Wallet',
-    placeholder: 'Enter xpub/ypub/zpub or mnemonic',
+    placeholder: 'Enter xpub/ypub/zpub ',
     import: 'Import',
-    invalidInput: 'Invalid xpub or mnemonic',
+    invalidInput: 'Invalid xpub',
   },
   payment: {
     title: 'Request Payment',

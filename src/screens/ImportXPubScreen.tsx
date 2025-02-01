@@ -128,7 +128,7 @@ export default function ImportXPubScreen() {
                 title={i18n.t('import.import')}
                 onPress={handleImport}
                 isLoading={isLoading}
-                disabled={!XPubService.validateFormat(xpubInput.trim()) && !XPubService.validateMnemonic(xpubInput.trim())}
+                disabled={!XPubService.validateFormat(xpubInput.trim())}
               />
             </View>
           </View>

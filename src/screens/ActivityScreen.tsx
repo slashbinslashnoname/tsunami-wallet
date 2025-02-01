@@ -103,16 +103,6 @@ export function ActivityScreen() {
       // Add transaction to state
       setRecentTransactions(prev => [tx, ...prev]);
 
-      // Add transaction to wallet context with proper status
-      dispatch({
-        type: 'ADD_TRANSACTION',
-        payload: {
-          ...tx,
-          status: tx.confirmations > 0 ? 'confirmed' : 'pending',
-          type: 'incoming',
-          amount: tx.amount
-        }
-      });
     };
 
     WebSocketService.subscribe(handleNewTransaction);
@@ -130,11 +120,10 @@ export function ActivityScreen() {
     container: {
       flex: 1,
       backgroundColor: theme.background,
-      marginTop: spacing.sm
     },
     header: {
       padding: spacing.md,
-      backgroundColor: theme.white,
+      backgroundColor: theme.background,
       marginHorizontal: spacing.md,
       marginBottom: spacing.sm,
     },

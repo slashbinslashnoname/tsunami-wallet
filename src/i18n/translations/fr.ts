@@ -33,13 +33,13 @@ export default {
     currentAddress: 'Adresse actuelle',
     nextAddress: 'Prochaine adresse',
     resetWallet: 'Réinitialiser',
-    resetConfirm: 'Voulez-vous vraiment supprimer le xpub et toutes les données du portefeuille ?',
+    resetConfirm: 'Voulez-vous vraiment supprimer la xpub et toutes les données du portefeuille ?',
   },
   import: {
     title: 'Importer un portefeuille',
-    placeholder: 'Entrez une xpub/ypub/zpub ou une mnémonique',
+    placeholder: 'Entrez une xpub/ypub/zpub',
     import: 'Importer',
-    invalidInput: 'xpub ou mnémonique invalide',
+    invalidInput: 'xpub invalide',
   },
   payment: {
     title: 'Demande de paiement',
