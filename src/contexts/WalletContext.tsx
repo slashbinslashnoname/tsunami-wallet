@@ -25,7 +25,8 @@ type WalletAction =
   | { type: 'SET_ERROR'; payload: string | null }
   | { type: 'SET_REFRESHING'; payload: boolean }
   | { type: 'REFRESH' }
-  | { type: 'RESET' };
+  | { type: 'RESET' }
+  | { type: 'ADD_TRANSACTION'; payload: Transaction };
 
 const initialState: WalletState = {
   transactions: [],
@@ -65,6 +66,8 @@ function walletReducer(state: WalletState, action: WalletAction): WalletState {
       return { ...state, isRefreshing: state.isRefreshing ? false : true };
     case 'RESET':
       return initialState;
+    case 'ADD_TRANSACTION':
+      return { ...state, transactions: [...state.transactions, action.payload] };
     default:
       return state;
   }

@@ -8,9 +8,16 @@ import {
   Animated 
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Transaction } from '../types/bitcoin';
 import { colors, spacing, typography, layout, borderRadius } from '../theme';
+
+type RootStackParamList = {
+  Transactions: undefined;
+};
+
+type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 function TransactionItem({ transaction, index }: { transaction: Transaction; index: number }) {
   const isIncoming = transaction.type === 'incoming';
@@ -76,7 +83,7 @@ export function RecentTransactions({
   transactions: Transaction[]; 
   isLoading: boolean;
 }) {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp>();
   const sortedTransactions = [...transactions].sort((a, b) => b.timestamp - a.timestamp);
   const recentTransactions = sortedTransactions.slice(0, number);
 

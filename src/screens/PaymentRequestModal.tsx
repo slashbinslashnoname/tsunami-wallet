@@ -37,7 +37,7 @@ interface PaymentRequestProps {
 }
 
 export default function PaymentRequest({ onClose }: PaymentRequestProps) {
-  const { state: walletState } = useWallet();
+  const { state: walletState, dispatch } = useWallet();
   const { state: settingsState } = useSettings();
   const [amount, setAmount] = useState('');
   const [currency, setCurrency] = useState<Currency>(settingsState.settings.currency);
@@ -54,6 +54,7 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
   const [currentAddress, setCurrentAddress] = useState<string | null>(null);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [currentTxId, setCurrentTxId] = useState<string | null>(null);
+  const [step, setStep] = useState<'amount' | 'qr'>('amount');
 
   const insets = useSafeAreaInsets();
 
@@ -94,14 +95,20 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
   }
 
   function generateQRData(paymentRequest: PaymentRequest): string {
+    // Convert to BTC amount
     const btcAmount = currency === 'BTC' 
       ? Number(amount)
       : ExchangeService.convertToBTC(Number(amount), rates[currency]);
-
-    // Ensure the amount is formatted to 8 decimal places for BTC
-    const formattedAmount = btcAmount.toFixed(8);
-
-    // Construct the QR data string with the address and amount
+    console.log(amount);
+    // Format BTC amount with exactly 8 decimal places, no grouping
+    const formattedAmount = btcAmount.toLocaleString('en-US', {
+      minimumFractionDigits: 8,
+      maximumFractionDigits: 8,
+      useGrouping: false,
+      style: 'decimal' // Ensure decimal format
+    }).replace(/[^\d.]/g, ''); // Remove any non-digit characters except decimal point
+    console.log(formattedAmount);
+    // Construct the BIP21 URI
     return `bitcoin:${paymentRequest.address}?amount=${formattedAmount}`;
   }
 
@@ -136,40 +143,37 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
     
     // Ensure only one decimal point
     if (cleanValue.split('.').length > 2) return;
-    
+
+    // Update amount immediately
     setAmount(cleanValue);
+    
+    // Early return if no valid number
+    const numValue = parseFloat(cleanValue);
+    if (!cleanValue || isNaN(numValue) || !rates.USD || !rates.EUR) {
+      setConvertedAmounts({ BTC: '', USD: '', EUR: '' });
+      return;
+    }
 
-    // Auto-convert as user types
-    if (cleanValue && rates.USD && rates.EUR) {
-      const numValue = parseFloat(cleanValue);
-      if (!isNaN(numValue)) {
-        if (currency === 'BTC') {
-          setConvertedAmounts({
-            BTC: cleanValue,
-            USD: (numValue * rates.USD).toFixed(2),
-            EUR: (numValue * rates.EUR).toFixed(2)
-          });
-        } else {
-          const btcAmount = ExchangeService.convertToBTC(numValue, rates[currency]);
-          setConvertedAmounts({
-            BTC: btcAmount.toFixed(8),
-            USD: currency === 'USD' ? cleanValue : ExchangeService.convertToFiat(btcAmount, rates.USD).toFixed(2),
-            EUR: currency === 'EUR' ? cleanValue : ExchangeService.convertToFiat(btcAmount, rates.EUR).toFixed(2)
-          });
+    // Calculate conversions
+    const conversions = currency === 'BTC' 
+      ? {
+          BTC: cleanValue,
+          USD: (numValue * rates.USD).toFixed(2),
+          EUR: (numValue * rates.EUR).toFixed(2)
         }
-      }
-    }
+      : {
+          BTC: ExchangeService.convertToBTC(numValue, rates[currency]).toFixed(8),
+          USD: currency === 'USD' ? cleanValue : ExchangeService.convertToFiat(
+            ExchangeService.convertToBTC(numValue, rates[currency]), 
+            rates.USD
+          ).toFixed(2),
+          EUR: currency === 'EUR' ? cleanValue : ExchangeService.convertToFiat(
+            ExchangeService.convertToBTC(numValue, rates[currency]), 
+            rates.EUR
+          ).toFixed(2)
+        };
 
-    // Regenerate QR code data with the new amount
-    if (currentAddress) {
-      const paymentRequest: PaymentRequest = {
-        address: currentAddress,
-        amount: Number(cleanValue),
-        currency,
-      };
-      const newQrData = generateQRData(paymentRequest);
-      setQrData(newQrData);
-    }
+    setConvertedAmounts(conversions);
   }
 
   function handleCurrencyChange(newCurrency: Currency) {
@@ -200,26 +204,168 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
     getNextUnusedAddress().then(setCurrentAddress);
   }, [walletState.index]);
 
+  // Add payment monitoring
   useEffect(() => {
-    if (qrData && currentAddress) {
-      const handleTransaction = (tx: Transaction) => {
-        const isPaymentToUs = tx.addresses.includes(currentAddress);
-        const isCorrectAmount = Math.abs(tx.amount - Number(amount)) < 0.00000001; // Account for floating point
-
-        if (isPaymentToUs && isCorrectAmount) {
-          setCurrentTxId(tx.txid);
+    if (currentAddress && step === 'qr') {
+      const handleTransaction = (tx:any) => {
+        // Check if this transaction involves our address
+        if (tx.addresses.includes(currentAddress)) {
           setPaymentConfirmed(true);
-          // Optional: Auto close after delay
-          setTimeout(() => onClose(), 3000);
+          setCurrentTxId(tx.txid);
+          
+          console.log('Payment confirmed');
+          console.log(tx);
+          // Push transaction to wallet context
+          dispatch({
+            type: 'ADD_TRANSACTION',
+            payload: {
+              ...tx,
+              type: 'incoming',
+              status: tx.confirmations > 0 ? 'confirmed' : 'pending'
+            }
+          });
+          
         }
       };
 
+      // Subscribe to WebSocket updates
       WebSocketService.subscribe(handleTransaction);
-      return () => WebSocketService.unsubscribe(handleTransaction);
-    }
-  }, [qrData, currentAddress, amount]);
 
-  // Add confirmation UI
+      // Cleanup
+      return () => {
+        WebSocketService.unsubscribe(handleTransaction);
+      };
+    }
+  }, [currentAddress, step]);
+
+  const renderAmountStep = () => (
+    <View style={styles.card}>
+      <View style={styles.amountContainer}>
+        <Text style={styles.currencySymbol}>
+          {currency === 'USD' ? '$' : currency === 'EUR' ? '€' : '₿'}
+        </Text>
+        <TextInput
+          style={styles.input}
+          placeholder="0.00"
+          value={amount}
+          onChangeText={handleAmountChange}
+          keyboardType="decimal-pad"
+          placeholderTextColor={colors.text.secondary}
+          autoFocus
+        />
+      </View>
+
+      <View style={styles.currencySelector}>
+        {(['BTC', 'USD', 'EUR'] as Currency[]).map((curr) => (
+          <Pressable
+            key={curr}
+            style={[
+              styles.currencyButton,
+              currency === curr && styles.currencyButtonActive
+            ]}
+            onPress={() => handleCurrencyChange(curr)}
+          >
+            <Text style={[
+              styles.currencyText,
+              currency === curr && styles.currencyTextActive
+            ]}>
+              {curr}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+
+      {amount && Object.entries(convertedAmounts)
+        .filter(([curr]) => curr !== currency)
+        .map(([curr, value]) => (
+          <Text key={curr} style={styles.conversion}>
+            ≈ {curr === 'USD' ? '$' : curr === 'EUR' ? '€' : '₿'}{value} {curr}
+          </Text>
+        ))}
+
+      <Button
+        title="Continue"
+        onPress={async () => {
+          await handleGenerateRequest();
+          setStep('qr');
+        }}
+        disabled={!amount || Number(amount) <= 0}
+        style={styles.continueButton}
+      />
+    </View>
+  );
+
+  const renderQRStep = () => (
+    <View style={styles.qrCard}>
+      <View style={styles.amountDisplay}>
+        <Text style={styles.amountText}>
+          {currency === 'BTC' ? '₿' : currency === 'USD' ? '$' : '€'}
+          {amount} {currency}
+        </Text>
+        {currency !== 'BTC' && (
+          <Text style={styles.btcAmount}>
+            ≈ ₿{convertedAmounts.BTC} BTC
+          </Text>
+        )}
+      </View>
+
+      {paymentConfirmed ? (
+        <View style={styles.confirmationOverlay}>
+          <MaterialCommunityIcons 
+            name="check-circle" 
+            size={64} 
+            color={colors.success} 
+          />
+          <Text style={styles.confirmationText}>Payment Received!</Text>
+          <Text style={styles.txIdText} numberOfLines={1}>
+            Transaction: {currentTxId}
+          </Text>
+        </View>
+      ) : (
+        <>
+          <QRCode
+            value={qrData}
+            size={240}
+            backgroundColor={colors.white}
+            color={colors.black}
+          />
+          <Pressable 
+            style={styles.addressContainer}
+            onPress={async () => {
+              if (currentAddress) {
+                await copyToClipboard(currentAddress);
+              }
+            }}
+          >
+            <Text style={styles.address} numberOfLines={1}>
+              {currentAddress || 'No address available'}
+            </Text>
+            <MaterialCommunityIcons 
+              name={copied ? "check" : "content-copy"} 
+              size={20} 
+              color={copied ? colors.success : colors.text.secondary} 
+            />
+          </Pressable>
+        </>
+      )}
+
+      <Button
+        title={paymentConfirmed ? "Done" : "New Request"}
+        onPress={() => {
+          if (paymentConfirmed) {
+            onClose();
+          } else {
+            setStep('amount');
+            setAmount('');
+            setQrData('');
+          }
+        }}
+        variant={paymentConfirmed ? "primary" : "secondary"}
+        style={styles.newRequestButton}
+      />
+    </View>
+  );
+
   const renderContent = () => {
     if (paymentConfirmed) {
       return (
@@ -241,84 +387,7 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.card}>
-          <View style={styles.amountContainer}>
-            <Text style={styles.currencySymbol}>
-              {currency === 'USD' ? '$' : currency === 'EUR' ? '€' : '₿'}
-            </Text>
-            <TextInput
-              style={styles.input}
-              placeholder="0.00"
-              value={amount}
-              onChangeText={handleAmountChange}
-              keyboardType="decimal-pad"
-              placeholderTextColor={colors.text.secondary}
-              autoFocus
-            />
-          </View>
-
-          <View style={styles.currencySelector}>
-            {(['BTC', 'USD', 'EUR'] as Currency[]).map((curr) => (
-              <Pressable
-                key={curr}
-                style={[
-                  styles.currencyButton,
-                  currency === curr && styles.currencyButtonActive
-                ]}
-                onPress={() => handleCurrencyChange(curr)}
-              >
-                <Text style={[
-                  styles.currencyText,
-                  currency === curr && styles.currencyTextActive
-                ]}>
-                  {curr}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-
-          {amount && Object.entries(convertedAmounts)
-            .filter(([curr]) => curr !== currency)
-            .map(([curr, value]) => (
-              <Text key={curr} style={styles.conversion}>
-                ≈ {curr === 'USD' ? '$' : curr === 'EUR' ? '€' : '₿'}{value} {curr}
-              </Text>
-            ))}
-        </View>
-
-        {qrData ? (
-          <View style={styles.qrCard}>
-            <QRCode
-              value={qrData}
-              size={240}
-              backgroundColor={colors.white}
-              color={colors.black}
-            />
-            <Pressable 
-              style={styles.addressContainer}
-              onPress={async () => {
-                if (currentAddress) {
-                  await copyToClipboard(currentAddress);
-                }
-              }}
-            >
-              <Text style={styles.address} numberOfLines={1}>
-                {currentAddress || 'No address available'}
-              </Text>
-              <MaterialCommunityIcons 
-                name={copied ? "check" : "content-copy"} 
-                size={20} 
-                color={copied ? colors.success : colors.text.secondary} 
-              />
-            </Pressable>
-          </View>
-        ) : (
-          <Button
-            title="Generate Request"
-            onPress={handleGenerateRequest}
-            disabled={!amount || !currentAddress}
-          />
-        )}
+        {step === 'amount' ? renderAmountStep() : renderQRStep()}
       </ScrollView>
     );
   };
@@ -488,8 +557,12 @@ const styles = StyleSheet.create({
     marginRight: spacing.sm,
     fontWeight: '500' as const,
   },
-  generateButton: {
-    marginTop: spacing.md,
+  continueButton: {
+    marginTop: spacing.xl,
+  },
+  newRequestButton: {
+    marginTop: spacing.xl,
+    width: '100%',
   },
   confirmationContainer: {
     alignItems: 'center',
@@ -505,5 +578,31 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.text.secondary,
     marginTop: spacing.sm,
+  },
+  amountDisplay: {
+    alignItems: 'center',
+    marginBottom: spacing.xl,
+  },
+  amountText: {
+    ...typography.heading,
+    fontSize: 28,
+    color: colors.text.primary,
+    fontWeight: '600' as const,
+  },
+  btcAmount: {
+    ...typography.body,
+    color: colors.text.secondary,
+    marginTop: spacing.xs,
+  },
+  confirmationOverlay: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.xl,
+  },
+  txIdText: {
+    ...typography.caption,
+    color: colors.text.secondary,
+    marginTop: spacing.sm,
+    maxWidth: '100%',
   },
 }); 

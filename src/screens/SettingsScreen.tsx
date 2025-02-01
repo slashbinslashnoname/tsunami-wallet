@@ -86,7 +86,7 @@ export default function SettingsScreen() {
 
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <Text style={styles.title}>Settings</Text>
       
       <View style={styles.section}>
@@ -129,7 +129,7 @@ export default function SettingsScreen() {
           variant="secondary"
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

@@ -150,7 +150,6 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.text.secondary,
     marginTop: spacing.xs,
-    fontWeight: '500' as const,
   },
   emptyState: {
     padding: spacing.xl,

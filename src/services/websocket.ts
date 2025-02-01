@@ -41,6 +41,9 @@ export const WebSocketService = {
 
   unsubscribe(callback: WebSocketCallback) {
     this.callbacks.delete(callback);
+    if (this.callbacks.size === 0) {
+      this.socket?.close();
+    }
   },
 
   formatTransaction(tx: any): Transaction {
