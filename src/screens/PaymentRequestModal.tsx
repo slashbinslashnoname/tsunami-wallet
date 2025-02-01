@@ -597,11 +597,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: spacing.xl,
-  },
-  txIdText: {
-    ...typography.caption,
-    color: colors.text.secondary,
-    marginTop: spacing.sm,
-    maxWidth: '100%',
-  },
+  }
+  
 }); 
