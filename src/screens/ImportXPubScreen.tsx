@@ -16,8 +16,12 @@ import { StorageService } from '../services/storage';
 import { Button } from '../components/Button';
 import { BitcoinIllustration } from '../components/BitcoinIllustration';
 import { AddressService } from '../services/address';
+import { useThemeMode } from '../contexts/ThemeContext';
+import { colors } from '../theme';
 
 export default function ImportXPubScreen() {
+  const { themeMode } = useThemeMode();
+  const theme = themeMode === 'dark' ? colors.dark : colors.light;
   const [xpubInput, setXpubInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { dispatch } = useWallet();
@@ -50,9 +54,42 @@ export default function ImportXPubScreen() {
     }
   }
 
-  function handleScanSuccess(e: { data: string }) {
-    setXpubInput(e.data);
-  }
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
+    keyboardView: {
+      flex: 1,
+    },
+    scrollContent: {
+      flexGrow: 1,
+    },
+    content: {
+      padding: 20,
+      flex: 1,
+      justifyContent: 'center',
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderRadius: 8,
+      padding: 12,
+      marginBottom: 20,
+      minHeight: 100,
+      textAlignVertical: 'top',
+      color: theme.text.primary,
+    },
+    buttonContainer: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+    },
+    centerText: {
+      fontSize: 18,
+      padding: 32,
+      color: theme.text.secondary,
+    },
+  }); 
 
   return (
     <SafeAreaView style={styles.container}>
@@ -66,10 +103,10 @@ export default function ImportXPubScreen() {
         >
           <BitcoinIllustration />
           <View style={styles.content}>
-            <Text style={styles.subtitle}>Import xpub/ypub/zpub or mnemonic</Text>
             <TextInput
               style={styles.input}
               placeholder="Enter xpub/ypub/zpub or mnemonic"
+              placeholderTextColor={theme.text.secondary}
               value={xpubInput}
               onChangeText={setXpubInput}
               multiline
@@ -90,43 +127,3 @@ export default function ImportXPubScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-  },
-  content: {
-    padding: 20,
-    flex: 1,
-    justifyContent: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 20,
-    minHeight: 100,
-    textAlignVertical: 'top',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  centerText: {
-    fontSize: 18,
-    padding: 32,
-    color: '#777',
-  },
-}); 

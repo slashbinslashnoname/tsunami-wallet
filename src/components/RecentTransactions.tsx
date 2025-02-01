@@ -12,7 +12,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Transaction } from '../types/bitcoin';
 import { colors, spacing, typography, layout, borderRadius } from '../theme';
-
+import { useThemeMode } from '../contexts/ThemeContext';
 type RootStackParamList = {
   Transactions: undefined;
 };
@@ -20,6 +20,8 @@ type RootStackParamList = {
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 function TransactionItem({ transaction, index }: { transaction: Transaction; index: number }) {
+  const { themeMode } = useThemeMode();
+  const theme = themeMode === 'dark' ? colors.dark : colors.light;
   const isIncoming = transaction.type === 'incoming';
   const amount = `${isIncoming ? '+' : '-'}${Math.abs(transaction.amount).toFixed(8)} BTC`;
   const date = new Date(transaction.timestamp).toLocaleDateString();
@@ -44,6 +46,69 @@ function TransactionItem({ transaction, index }: { transaction: Transaction; ind
     }).start();
   }, []);
 
+  const styles = StyleSheet.create({
+    transactionItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: spacing.sm,
+      marginBottom: spacing.sm,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.card.border,
+    },
+    iconContainer: {
+      width: 40,
+      height: 40,
+      borderRadius: borderRadius.full,
+      backgroundColor: theme.background,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: spacing.sm,
+    },
+    detailsContainer: {
+      flex: 1,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    leftColumn: {
+      flex: 1,
+      marginRight: spacing.sm,
+    },
+    rightColumn: {
+      alignItems: 'flex-end',
+    },
+
+    transactionType: {
+      ...typography(theme).body,
+      fontWeight: '500' as const,
+    },
+    date: {
+      ...typography(theme).caption,
+    },
+    amount: {
+      ...typography(theme).body,
+      textAlign: 'right',
+      fontWeight: '600' as const,
+    },
+    incoming: {
+      color: theme.primary,
+    },
+    outgoing: {
+      color: theme.primary,
+    },
+    status: {
+      ...typography(theme).caption,
+      textAlign: 'right',
+      fontWeight: '500' as const,
+    },
+    confirmed: {
+      color: theme.text.primary,
+    },
+    address: {
+      ...typography(theme).caption,
+      color: theme.text.secondary,
+    },
+  });
 
   return (
     <Animated.View style={[styles.transactionItem, { opacity: fadeAnim }]}>
@@ -51,7 +116,7 @@ function TransactionItem({ transaction, index }: { transaction: Transaction; ind
         <MaterialCommunityIcons 
           name={isIncoming ? 'arrow-bottom-left' : 'arrow-top-right'} 
           size={24} 
-          color={isIncoming ? colors.success : colors.error} 
+          color={isIncoming ? theme.success : theme.error} 
         />
       </View>
       <View style={styles.detailsContainer}>
@@ -83,14 +148,58 @@ export function RecentTransactions({
   transactions: Transaction[]; 
   isLoading: boolean;
 }) {
+  const { themeMode } = useThemeMode();
+  const theme = themeMode === 'dark' ? colors.dark : colors.light;
   const navigation = useNavigation<NavigationProp>();
   const sortedTransactions = [...transactions].sort((a, b) => b.timestamp - a.timestamp);
   const recentTransactions = sortedTransactions.slice(0, number);
 
+  const styles = StyleSheet.create({
+    container: {
+      ...layout(theme).card,
+      marginHorizontal: spacing.md,
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: spacing.lg,
+    },
+    title: {
+      ...typography(theme).subheading,
+    },
+    viewAllButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: spacing.xs,
+      borderRadius: borderRadius.sm,
+    },
+    viewAll: {
+      ...typography(theme).button,
+      color: theme.primary,
+      marginRight: spacing.xs,
+    },
+    
+    loader: {
+      padding: spacing.xl,
+    },
+    emptyState: {
+      ...layout(theme).center,
+      padding: spacing.xl,
+      alignItems: 'center' as const,
+      justifyContent: 'center' as const,
+    },
+    emptyText: {
+      ...typography(theme).body,
+      color: theme.text.secondary,
+      marginTop: spacing.sm,
+    },
+  });
+
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator style={styles.loader} color={colors.primary} />
+        <ActivityIndicator style={styles.loader} color={theme.primary} />
       </View>
     );
   }
@@ -111,7 +220,7 @@ export function RecentTransactions({
             <MaterialCommunityIcons 
               name="chevron-right" 
               size={20} 
-              color={colors.primary} 
+              color={theme.primary} 
             />
           </Pressable>
         )}
@@ -126,112 +235,11 @@ export function RecentTransactions({
           <MaterialCommunityIcons 
             name="currency-btc" 
             size={48} 
-            color={colors.text.secondary} 
+            color={theme.text.secondary} 
           />
           <Text style={styles.emptyText}>No transactions yet</Text>
         </View>
       )}
     </View>
   );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    ...layout.card,
-    marginHorizontal: spacing.md,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.lg,
-  },
-  title: {
-    ...typography.subheading,
-  },
-  viewAllButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: spacing.xs,
-    borderRadius: borderRadius.sm,
-  },
-  viewAll: {
-    ...typography.button,
-    color: colors.primary,
-    marginRight: spacing.xs,
-  },
-  transactionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-    marginBottom: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.card.border,
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.background,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: spacing.sm,
-  },
-  detailsContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  leftColumn: {
-    flex: 1,
-    marginRight: spacing.sm,
-  },
-  rightColumn: {
-    alignItems: 'flex-end',
-  },
-  transactionType: {
-    ...typography.body,
-    fontWeight: '500' as const,
-  },
-  date: {
-    ...typography.caption,
-  },
-  amount: {
-    ...typography.body,
-    textAlign: 'right',
-    fontWeight: '600' as const,
-  },
-  incoming: {
-    color: colors.primary,
-  },
-  outgoing: {
-    color: colors.primary,
-  },
-  status: {
-    ...typography.caption,
-    textAlign: 'right',
-    fontWeight: '500' as const,
-  },
-  confirmed: {
-    color: colors.text.primary,
-  },
-  loader: {
-    padding: spacing.xl,
-  },
-  emptyState: {
-    ...layout.center,
-    padding: spacing.xl,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-  },
-  emptyText: {
-    ...typography.body,
-    color: colors.text.secondary,
-    marginTop: spacing.sm,
-  },
-  address: {
-    ...typography.caption,
-    color: colors.text.secondary,
-  },
-}); 
+} 

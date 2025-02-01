@@ -8,7 +8,7 @@ import TransactionsScreen from '../screens/TransactionsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import { colors } from '../theme';
 import { ActivityScreen } from '../screens/ActivityScreen';
-import { LoadingScreen } from '../screens/LoadingScreen';
+import { useThemeMode, ThemeProvider } from '../contexts/ThemeContext';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -22,57 +22,68 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
-  const { state } = useWallet();
   return (
-    <NavigationContainer>
-      <Stack.Navigator>
-        {!state.xpubData || state.isLoading ? (
+    <ThemeProvider>
+      <NavigationContainer>
+        <MainNavigator />
+      </NavigationContainer>
+    </ThemeProvider>
+  );
+}
+
+function MainNavigator() {
+  const { state } = useWallet();
+  const { themeMode } = useThemeMode();
+  const theme = themeMode === 'dark' ? colors.dark : colors.light;
+
+  return (
+    <Stack.Navigator>
+      {!state.xpubData || state.isLoading ? (
+        <Stack.Screen 
+          name="ImportXPub" 
+          component={ImportXPubScreen} 
+          options={{ headerShown: false }} 
+        />
+      ) : (
+        <>
           <Stack.Screen 
-            name="ImportXPub" 
-            component={ImportXPubScreen} 
+            name="Home" 
+            component={HomeScreen} 
             options={{ headerShown: false }} 
           />
-        ) : (
-          <>
-            <Stack.Screen 
-              name="Home" 
-              component={HomeScreen} 
-              options={{ headerShown: false }} 
-            />
-            <Stack.Screen 
-              name="Transactions" 
-              component={TransactionsScreen} 
-              options={{ 
-                headerShown: false // We're handling the header in the component
-              }} 
-            />
-            <Stack.Screen 
-              name="Settings" 
-              component={SettingsScreen} 
-              options={{ 
-                headerShown: true,
-                title: 'Settings',
-                headerStyle: {
-                  backgroundColor: colors.background,
-                },
-                headerTintColor: colors.text.primary,
-              }} 
-            />
-            <Stack.Screen 
-              name="Activity" 
-              component={ActivityScreen}
-              options={{
-                headerShown: true,
-                title: 'Activity',
-                headerStyle: {
-                  backgroundColor: colors.background,
-                },
-                headerTintColor: colors.text.primary
-              }}
-            />
-          </>
-        )}
-      </Stack.Navigator>
-    </NavigationContainer>
+          <Stack.Screen 
+            name="Transactions" 
+            component={TransactionsScreen} 
+            options={{ 
+              headerShown: false // We're handling the header in the component
+            }} 
+          />
+          <Stack.Screen 
+            name="Settings" 
+            component={SettingsScreen} 
+            options={{ 
+              headerShown: true,
+              title: 'Settings',
+              headerStyle: {
+                backgroundColor: theme.background,
+              },
+              headerTintColor: theme.text.primary,
+            }} 
+          />
+          <Stack.Screen 
+            name="Activity" 
+            component={ActivityScreen}
+            options={{
+              headerShown: true,
+              title: 'Activity',
+              headerStyle: {
+                backgroundColor: theme.background,
+              },
+              headerTintColor: theme.text.primary
+            }}
+          />
+        </>
+      )}
+    </Stack.Navigator>
   );
 } 

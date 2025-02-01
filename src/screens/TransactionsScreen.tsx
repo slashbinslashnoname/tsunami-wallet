@@ -6,9 +6,11 @@ import { useNavigation } from '@react-navigation/native';
 import { useWallet } from '../contexts/WalletContext';
 import { Transaction } from '../types/bitcoin';
 import { colors, spacing, typography, layout, borderRadius } from '../theme';
-import { formatAddress } from '../utils/bitcoin';
+import { useThemeMode } from '../contexts/ThemeContext';
 
 function TransactionItem({ transaction }: { transaction: Transaction }) {
+  const { themeMode } = useThemeMode();
+  const theme = themeMode === 'dark' ? colors.dark : colors.light;
   const isIncoming = transaction.type === "incoming";
   const amount = transaction.amount.toFixed(8);
   const date = new Date(transaction.timestamp).toLocaleDateString();
@@ -18,13 +20,68 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
     ? transaction.addresses[transaction.addresses.length - 1] // Last address is usually the receiving address
     : transaction.addresses[0]; // First address is usually the sending address
 
+  const styles = StyleSheet.create({
+
+    transactionItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: spacing.sm,
+      ...layout(theme).card,
+    },
+    iconContainer: {
+      width: 40,
+      height: 40,
+      borderRadius: borderRadius.full,
+      backgroundColor: theme.background,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: spacing.md,
+    },
+    detailsContainer: {
+      flex: 1,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    transactionType: {
+      ...typography(theme).body,
+      fontWeight: '500',
+    },
+    date: {
+      ...typography(theme).caption,
+      color: theme.text.secondary,
+    },
+    amount: {
+      ...typography(theme).body,
+      textAlign: 'right',
+      fontWeight: '600',
+    },
+    currency: {
+      color: theme.primary,
+    },
+    incoming: {
+      color: theme.primary,
+    },
+    outgoing: {
+      color: theme.primary,
+    },
+    status: {
+      ...typography(theme).caption,
+      color: theme.text.secondary,
+      textAlign: 'right',
+    },
+    confirmed: {
+      color: theme.primary,
+    },
+  });
+
   return (
     <View style={styles.transactionItem}>
       <View style={styles.iconContainer}>
         <MaterialCommunityIcons 
           name={isIncoming ? 'arrow-bottom-left' : 'arrow-top-right'} 
           size={24} 
-          color={isIncoming ? colors.success : colors.error} 
+          color={isIncoming ? theme.success : theme.error} 
         />
       </View>
       <View style={styles.detailsContainer}>
@@ -52,12 +109,73 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
 const TRANSACTIONS_PER_PAGE = 20;
 
 export default function TransactionsScreen() {
+  const { themeMode } = useThemeMode();
+  const theme = themeMode === 'dark' ? colors.dark : colors.light;
   const navigation = useNavigation();
   const { state: walletState, dispatch } = useWallet();
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const [page, setPage] = useState(0);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: spacing.md,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+    },
+    backButton: {
+      width: 40,
+      height: 40,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: borderRadius.full,
+    },
+    title: {
+      ...typography(theme).heading,
+      fontSize: 20,
+    },
+    listContent: {
+      padding: spacing.md,
+    },
+    emptyListContent: {
+      flex: 1,
+      justifyContent: 'center',
+    },
+    emptyState: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: spacing.xl,
+    },
+    emptyText: {
+      ...typography(theme).body,
+      color: theme.text.secondary,
+      marginTop: spacing.sm,
+    },
+    loadMoreButton: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: spacing.md,
+      backgroundColor: theme.white,
+      borderRadius: borderRadius.md,
+      marginTop: spacing.md,
+    },
+    loadMoreText: {
+      ...typography(theme).body,
+      color: theme.primary,
+    },
+    address: {
+      ...typography(theme).caption,
+      color: theme.text.secondary,
+    },
+  });
 
   const paginatedTransactions = walletState.transactions.slice(0, (page + 1) * TRANSACTIONS_PER_PAGE);
   const hasMoreTransactions = paginatedTransactions.length < walletState.transactions.length;
@@ -92,7 +210,7 @@ export default function TransactionsScreen() {
           <MaterialCommunityIcons 
             name="arrow-left" 
             size={24} 
-            color={colors.text.primary} 
+            color={theme.text.primary} 
           />
         </Pressable>
         <Text style={styles.title}>Transactions</Text>
@@ -107,7 +225,7 @@ export default function TransactionsScreen() {
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={onRefresh}
-            tintColor={colors.primary}
+            tintColor={theme.primary}
           />
         }
         ListEmptyComponent={
@@ -115,7 +233,7 @@ export default function TransactionsScreen() {
             <MaterialCommunityIcons 
               name="currency-btc" 
               size={48} 
-              color={colors.text.secondary} 
+              color={theme.text.secondary} 
             />
             <Text style={styles.emptyText}>No transactions yet</Text>
           </View>
@@ -127,7 +245,7 @@ export default function TransactionsScreen() {
               onPress={loadMore}
             >
               {isLoadingMore ? (
-                <ActivityIndicator color={colors.primary} />
+                <ActivityIndicator color={theme.primary} />
               ) : (
                 <Text style={styles.loadMoreText}>Load More</Text>
               )}
@@ -141,115 +259,4 @@ export default function TransactionsScreen() {
       />
     </SafeAreaView>
   );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: borderRadius.full,
-  },
-  title: {
-    ...typography.heading,
-    fontSize: 20,
-  },
-  listContent: {
-    padding: spacing.md,
-  },
-  emptyListContent: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  transactionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-    ...layout.card,
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.background,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: spacing.md,
-  },
-  detailsContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  transactionType: {
-    ...typography.body,
-    fontWeight: '500',
-  },
-  date: {
-    ...typography.caption,
-    color: colors.text.secondary,
-  },
-  amount: {
-    ...typography.body,
-    textAlign: 'right',
-    fontWeight: '600',
-  },
-  currency: {
-    color: colors.primary,
-  },
-  incoming: {
-    color: colors.primary,
-  },
-  outgoing: {
-    color: colors.primary,
-  },
-  status: {
-    ...typography.caption,
-    color: colors.text.secondary,
-    textAlign: 'right',
-  },
-  confirmed: {
-    color: colors.primary,
-  },
-  emptyState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.xl,
-  },
-  emptyText: {
-    ...typography.body,
-    color: colors.text.secondary,
-    marginTop: spacing.sm,
-  },
-  loadMoreButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.md,
-    backgroundColor: colors.white,
-    borderRadius: borderRadius.md,
-    marginTop: spacing.md,
-  },
-  loadMoreText: {
-    ...typography.body,
-    color: colors.primary,
-  },
-  address: {
-    ...typography.caption,
-    color: colors.text.secondary,
-  },
-}); 
+} 

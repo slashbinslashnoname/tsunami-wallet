@@ -6,18 +6,24 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { WalletProvider } from './contexts/WalletContext';
 import { SettingsProvider } from './contexts/SettingsContext';
 import { RootNavigator } from './navigation/RootNavigator';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { NavigationContainer } from '@react-navigation/native';
 
 export default function App() {
   return (
-    <GestureHandlerRootView style={styles.container}>
-      <SafeAreaProvider>
-        <SettingsProvider>
-          <WalletProvider>
-            <RootNavigator />
-          </WalletProvider>
-        </SettingsProvider>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <ThemeProvider>
+      <GestureHandlerRootView style={styles.container}>
+        <SafeAreaProvider>
+          <SettingsProvider>
+            <WalletProvider>
+              <NavigationContainer>
+                <RootNavigator />
+              </NavigationContainer>
+            </WalletProvider>
+          </SettingsProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </ThemeProvider>
   );
 }
 

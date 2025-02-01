@@ -7,7 +7,7 @@ import {
   ViewStyle
 } from 'react-native';
 import { colors, spacing, borderRadius, typography } from '../theme';
-
+import { useThemeMode } from '../contexts/ThemeContext';
 interface ButtonProps {
   title: string;
   onPress: () => void;
@@ -25,6 +25,35 @@ export function Button({
   variant = 'primary',
   style
 }: ButtonProps) {
+  const { themeMode } = useThemeMode();
+  const theme = themeMode === 'dark' ? colors.dark : colors.light;
+
+const styles = StyleSheet.create({
+  button: {
+    backgroundColor: theme.primary,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+  },
+  secondaryButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: theme.primary,
+  },
+  text: {
+    ...typography(theme).body,
+    color: theme.white,
+    fontWeight: '600',
+  },
+  secondaryText: {
+    color: theme.primary,
+  },
+  disabled: {
+    opacity: 0.5,
+  },
+}); 
+
   return (
     <TouchableOpacity
       style={[
@@ -49,29 +78,3 @@ export function Button({
     </TouchableOpacity>
   );
 }
-
-const styles = StyleSheet.create({
-  button: {
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    borderRadius: borderRadius.md,
-    alignItems: 'center',
-  },
-  secondaryButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: colors.primary,
-  },
-  text: {
-    ...typography.body,
-    color: colors.white,
-    fontWeight: '600',
-  },
-  secondaryText: {
-    color: colors.primary,
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-}); 

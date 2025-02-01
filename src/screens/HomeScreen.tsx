@@ -13,15 +13,30 @@ import { BalanceCard } from '../components/BalanceCard';
 import { RecentTransactions } from '../components/RecentTransactions';
 import { PaymentRequestButton } from '../components/PaymentRequestButton';
 import PaymentRequest from '../screens/PaymentRequestModal';
+import { useThemeMode } from '../contexts/ThemeContext';
 import { colors } from '../theme';
-
 export default function HomeScreen() {
+  const { themeMode } = useThemeMode();
+  const theme = themeMode === 'dark' ? colors.dark : colors.light;
   const { state, dispatch } = useWallet();
   const [isPaymentRequestVisible, setPaymentRequestVisible] = useState(false);
 
   const onRefresh = useCallback(() => {
     dispatch({ type: 'REFRESH' });
   }, [dispatch]);
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
+    keyboardView: {
+      flex: 1,
+    },
+    scrollContent: {
+      flexGrow: 1,
+    },
+  }); 
 
   return (
     <SafeAreaView style={styles.container}>
@@ -51,16 +66,3 @@ export default function HomeScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-  },
-}); 

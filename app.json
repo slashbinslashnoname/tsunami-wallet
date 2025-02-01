@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -17,7 +17,8 @@
       "bundleIdentifier": "com.slashbin.TsunamiWallet",
       "infoPlist": {
         "NSLocalNetworkUsageDescription": "This app needs access to the local network to communicate with the development server",
-        "NSBonjourServices": ["_expo._tcp"]
+        "NSBonjourServices": ["_expo._tcp"],
+        "UIUserInterfaceStyle": "automatic"
       }
     },
     "android": {
@@ -28,7 +29,8 @@
       "permissions": [
         "android.permission.CAMERA"
       ],
-      "package": "com.slashbin.TsunamiWallet"
+      "package": "com.slashbin.TsunamiWallet",
+      "userInterfaceStyle": "automatic"
     },
     "web": {
       "favicon": "./assets/favicon.png"

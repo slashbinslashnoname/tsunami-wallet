@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text, Alert, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, StyleSheet, Text, Alert, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, useColorScheme } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useWallet } from '../contexts/WalletContext';
 import { StorageService } from '../services/storage';
@@ -11,12 +11,16 @@ import { RootStackParamList } from '../navigation/RootNavigator';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AddressService } from '../services/address';
 import { formatAddress } from '../utils/bitcoin';
+import { useThemeMode } from '../contexts/ThemeContext';
 
 export default function SettingsScreen() {
+  const colorScheme = useColorScheme();
+  const { themeMode, setThemeMode } = useThemeMode();
   const { state: walletState, dispatch: walletDispatch } = useWallet();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [nextAddress, setNextAddress] = useState('No address');
   const [currentAddress, setCurrentAddress] = useState('No address');
+  const theme = themeMode === 'dark' ? colors.dark : colors.light;
 
   useEffect(() => {
     async function loadNextAddress() {
@@ -53,7 +57,33 @@ export default function SettingsScreen() {
     );
   };
 
-  
+  const handleThemePress = () => {
+    Alert.alert(
+      'Theme Settings',
+      'Choose your preferred theme',
+      [
+        {
+          text: 'Light',
+          onPress: () => setThemeMode('light'),
+          style: themeMode === 'light' ? 'destructive' : 'default',
+        },
+        {
+          text: 'Dark',
+          onPress: () => setThemeMode('dark'),
+          style: themeMode === 'dark' ? 'destructive' : 'default',
+        },
+        {
+          text: 'System',
+          onPress: () => setThemeMode('system'),
+          style: themeMode === 'system' ? 'destructive' : 'default',
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+      ]
+    );
+  };
 
   const settingsItems = [
     {
@@ -82,8 +112,62 @@ export default function SettingsScreen() {
       onPress: () => {},
       showChevron: false
     },
+    {
+      icon: 'theme-light-dark',
+      title: 'Theme',
+      subtitle: themeMode === 'system' 
+        ? 'System Default' 
+        : themeMode === 'dark' 
+          ? 'Dark Mode' 
+          : 'Light Mode',
+      onPress: handleThemePress,
+      showChevron: true
+    },
   ];
 
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.background,
+      padding: spacing.md,
+    },
+    title: {
+      ...typography(theme).heading,
+      marginBottom: spacing.lg,
+    },
+    section: {
+      backgroundColor: theme.card.background,
+      borderRadius: 8,
+      padding: spacing.md,
+      marginBottom: spacing.md,
+    },
+    settingItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: spacing.sm,
+    },
+    settingContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    settingText: {
+      ...typography(theme).body,
+      marginLeft: spacing.md,
+    },
+    settingSubtext: {
+      ...typography(theme).caption,
+      color: theme.text.secondary,
+      marginTop: spacing.xs,
+      marginLeft: spacing.md,
+    },
+    keyboardView: {
+      flex: 1,
+    },
+    scrollContent: {
+      flexGrow: 1,
+    },
+  });
 
   return (
     <SafeAreaView style={styles.container}>
@@ -109,7 +193,7 @@ export default function SettingsScreen() {
                     <MaterialCommunityIcons 
                       name={item.icon as any} 
                       size={24} 
-                      color={colors.text.primary} 
+                      color={theme.text.primary} 
                     />
                     <View>
                       <Text style={styles.settingText}>{item.title}</Text>
@@ -124,7 +208,7 @@ export default function SettingsScreen() {
                     <MaterialCommunityIcons 
                       name="chevron-right" 
                       size={24} 
-                      color={colors.text.secondary} 
+                      color={themeMode === 'dark' ? colors.dark.text.secondary : colors.light.text.secondary} 
                     />
                   )}
                 </TouchableOpacity>
@@ -144,47 +228,3 @@ export default function SettingsScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-    padding: spacing.md,
-  },
-  title: {
-    ...typography.heading,
-    marginBottom: spacing.lg,
-  },
-  section: {
-    backgroundColor: colors.white,
-    borderRadius: 8,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-  },
-  settingItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.sm,
-  },
-  settingContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  settingText: {
-    ...typography.body,
-    marginLeft: spacing.md,
-  },
-  settingSubtext: {
-    ...typography.caption,
-    color: colors.text.secondary,
-    marginTop: spacing.xs,
-    marginLeft: spacing.md,
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-  },
-});

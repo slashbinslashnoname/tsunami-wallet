@@ -12,9 +12,12 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { WebSocketService } from '../services/websocket';
 import { Transaction } from '../types/bitcoin';
 import { colors, spacing, typography, layout } from '../theme';
+import { useThemeMode } from '../contexts/ThemeContext';
 import { useWallet } from '../contexts/WalletContext';
 
 function TransactionItem({ transaction }: { transaction: Transaction }) {
+  const { themeMode } = useThemeMode();
+  const theme = themeMode === 'dark' ? colors.dark : colors.light;
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
   const isIncoming = transaction.type === 'incoming';
 
@@ -26,13 +29,51 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
     }).start();
   }, []);
 
+  const styles = StyleSheet.create({
+   
+    transactionItem: {
+      flexDirection: 'row',
+      marginHorizontal: spacing.md,
+      marginBottom: spacing.sm,
+      ...layout(theme).card,
+    },
+    iconContainer: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: theme.background,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: spacing.md,
+    },
+    detailsContainer: {
+      flex: 1,
+      justifyContent: 'space-between',
+    },
+    amount: {
+      ...typography(theme).body,
+      fontWeight: '600' as const,
+    },
+    status: {
+      ...typography(theme).caption,
+      color: theme.text.secondary,
+      marginTop: spacing.xs,
+      fontWeight: '500' as const,
+    },
+    address: {
+      ...typography(theme).caption,
+      color: theme.text.secondary,
+      marginTop: spacing.xs,
+    },
+  });
+
   return (
     <Animated.View style={[styles.transactionItem, { opacity: fadeAnim }]}>
       <View style={styles.iconContainer}>
         <MaterialCommunityIcons 
           name={isIncoming ? 'arrow-bottom-left' : 'arrow-top-right'} 
           size={24} 
-          color={isIncoming ? colors.success : colors.error} 
+          color={isIncoming ? theme.success : theme.error} 
         />
       </View>
       <View style={styles.detailsContainer}>
@@ -51,6 +92,8 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
 }
 
 export function ActivityScreen() {
+  const { themeMode } = useThemeMode();
+  const theme = themeMode === 'dark' ? colors.dark : colors.light;
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { state: walletState, dispatch } = useWallet();
@@ -70,6 +113,35 @@ export function ActivityScreen() {
     setIsRefreshing(false);
   };
 
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.background,
+      marginTop: spacing.sm
+    },
+    header: {
+      padding: spacing.md,
+      backgroundColor: theme.white,
+      marginHorizontal: spacing.md,
+      marginBottom: spacing.sm,
+    },
+    headerText: {
+      ...typography(theme).heading,
+      color: theme.text.primary,
+      fontWeight: '600' as const,
+    },
+    emptyState: {
+      padding: spacing.xl,
+    },
+    emptyText: {
+      ...typography(theme).body,
+      color: theme.text.secondary,
+      marginTop: spacing.md,
+      fontWeight: '500' as const,
+    },
+  }); 
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -88,7 +160,7 @@ export function ActivityScreen() {
             <MaterialCommunityIcons 
               name="bell-outline" 
               size={48} 
-              color={colors.text.secondary} 
+              color={theme.text.secondary} 
             />
             <Text style={styles.emptyText}>
               Waiting for new transactions...
@@ -99,65 +171,3 @@ export function ActivityScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-    marginTop: spacing.sm
-  },
-  header: {
-    padding: spacing.md,
-    backgroundColor: colors.white,
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.sm,
-  },
-  headerText: {
-    ...typography.heading,
-    color: colors.text.primary,
-    fontWeight: '600' as const,
-  },
-  transactionItem: {
-    flexDirection: 'row',
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.sm,
-    ...layout.card,
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.background,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: spacing.md,
-  },
-  detailsContainer: {
-    flex: 1,
-    justifyContent: 'space-between',
-  },
-  amount: {
-    ...typography.body,
-    fontWeight: '600' as const,
-  },
-  status: {
-    ...typography.caption,
-    color: colors.text.secondary,
-    marginTop: spacing.xs,
-    fontWeight: '500' as const,
-  },
-  address: {
-    ...typography.caption,
-    color: colors.text.secondary,
-    marginTop: spacing.xs,
-  },
-  emptyState: {
-    padding: spacing.xl,
-  },
-  emptyText: {
-    ...typography.body,
-    color: colors.text.secondary,
-    marginTop: spacing.md,
-    fontWeight: '500' as const,
-  },
-}); 

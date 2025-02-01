@@ -20,10 +20,10 @@ import { useWallet } from '../contexts/WalletContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { ExchangeService } from '../services/exchange';
 import { Button } from '../components/Button';
-import { colors, spacing, typography, shadows, layout, borderRadius } from '../theme';
+import { colors, spacing, typography, layout, borderRadius } from '../theme';
 import { AddressService } from '../services/address';
 import { WebSocketService } from '../services/websocket';
-
+import { useThemeMode } from '../contexts/ThemeContext';
 type Currency = 'BTC' | 'USD' | 'EUR';
 
 interface PaymentRequest {
@@ -37,6 +37,9 @@ interface PaymentRequestProps {
 }
 
 export default function PaymentRequest({ onClose }: PaymentRequestProps) {
+  const { themeMode } = useThemeMode();
+  const theme = themeMode === 'dark' ? colors.dark : colors.light;
+
   const { state: walletState, dispatch } = useWallet();
   const { state: settingsState } = useSettings();
   const [amount, setAmount] = useState('');
@@ -56,7 +59,175 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
   const [currentTxId, setCurrentTxId] = useState<string | null>(null);
   const [step, setStep] = useState<'amount' | 'qr'>('amount');
 
-  const insets = useSafeAreaInsets();
+
+  const styles = StyleSheet.create({
+    keyboardView: {
+      flex: 1,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      justifyContent: 'flex-end',
+    },
+    modalContainer: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'flex-end',
+    },
+    modalContent: {
+      backgroundColor: theme.background,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      padding: spacing.md,
+      minHeight: '50%',
+    },
+    handle: {
+      width: 32,
+      height: 4,
+      borderRadius: 2,
+      backgroundColor: theme.text.secondary,
+      opacity: 0.2,
+      alignSelf: 'center',
+      marginTop: spacing.sm,
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: spacing.md,
+    },
+    scrollView: {
+      padding: spacing.md,
+    },
+    title: {
+      ...typography(theme).heading,
+      fontSize: 24,
+      fontWeight: '500' as const,
+    },
+    closeButton: {
+      padding: spacing.xs,
+      borderRadius: borderRadius.full,
+    },
+    card: {
+      ...layout(theme).card,
+      paddingVertical: spacing.md,
+    },
+    amountContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: spacing.md,
+    },
+    currencySymbol: {
+      ...typography(theme).heading,
+      fontSize: 32,
+      color: theme.text.primary,
+      marginRight: spacing.xs,
+      fontWeight: '500' as const,
+    },
+    input: {
+      ...typography(theme).heading,
+      fontSize: 32,
+      color: theme.text.primary,
+      minWidth: 120,
+      textAlign: 'left',
+      padding: 0,
+      fontWeight: '500' as const,
+    },
+    currencySelector: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      gap: spacing.sm,
+    },
+    currencyButton: {
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.md,
+      borderRadius: borderRadius.full,
+      backgroundColor: theme.background,
+      minWidth: 60,
+      alignItems: 'center',
+    },
+    currencyButtonActive: {
+      backgroundColor: theme.primary,
+    },
+    currencyText: {
+      ...typography(theme).button,
+      color: theme.text.primary,
+      fontWeight: '500' as const,
+    },
+    currencyTextActive: {
+      color: theme.white,
+    },
+    conversion: {
+      ...typography(theme).caption,
+      textAlign: 'center',
+      marginTop: spacing.md,
+      fontWeight: '500' as const,
+    },
+    qrCard: {
+      ...layout(theme).card,
+      alignItems: 'center',
+      paddingVertical: spacing.lg,
+      marginTop: spacing.md,
+    },
+    addressContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: spacing.lg,
+      padding: spacing.sm,
+      backgroundColor: theme.background,
+      borderRadius: borderRadius.md,
+      width: '100%',
+    },
+    address: {
+      ...typography(theme).caption,
+      flex: 1,
+      marginRight: spacing.sm,
+      fontWeight: '500' as const,
+    },
+    continueButton: {
+      marginTop: spacing.xl,
+    },
+    newRequestButton: {
+      marginTop: spacing.xl,
+      width: '100%',
+    },
+    confirmationContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: spacing.xl,
+    },
+    confirmationText: {
+      ...typography(theme).heading,
+      color: theme.success,
+      marginTop: spacing.md,
+    },
+    txIdText: {
+      ...typography(theme).caption,
+      color: theme.text.secondary,
+      marginTop: spacing.sm,
+    },
+    amountDisplay: {
+      alignItems: 'center',
+      marginBottom: spacing.xl,
+    },
+    amountText: {
+      ...typography(theme).heading,
+      fontSize: 28,
+      color: theme.text.primary,
+      fontWeight: '600' as const,
+    },
+    btcAmount: {
+      ...typography(theme).body,
+      color: theme.text.secondary,
+      marginTop: spacing.xs,
+    },
+    confirmationOverlay: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: spacing.xl,
+    }
+    
+  }); 
 
   useEffect(() => {
     loadExchangeRates();
@@ -251,7 +422,7 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
           value={amount}
           onChangeText={handleAmountChange}
           keyboardType="decimal-pad"
-          placeholderTextColor={colors.text.secondary}
+          placeholderTextColor={theme.text.secondary}
           autoFocus
         />
       </View>
@@ -315,7 +486,7 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
           <MaterialCommunityIcons 
             name="check-circle" 
             size={64} 
-            color={colors.success} 
+            color={theme.success} 
           />
           <Text style={styles.confirmationText}>Payment Received!</Text>
           <Text style={styles.txIdText} numberOfLines={1}>
@@ -327,8 +498,8 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
           <QRCode
             value={qrData}
             size={240}
-            backgroundColor={colors.white}
-            color={colors.black}
+            backgroundColor={theme.white}
+            color={theme.black}
           />
           <Pressable 
             style={styles.addressContainer}
@@ -344,7 +515,7 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
             <MaterialCommunityIcons 
               name={copied ? "check" : "content-copy"} 
               size={20} 
-              color={copied ? colors.success : colors.text.secondary} 
+              color={copied ? theme.success : theme.text.secondary} 
             />
           </Pressable>
         </>
@@ -374,7 +545,7 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
           <MaterialCommunityIcons 
             name="check-circle" 
             size={64} 
-            color={colors.success} 
+            color={theme.success} 
           />
           <Text style={styles.confirmationText}>Payment Received!</Text>
           <Text style={styles.txIdText}>{currentTxId}</Text>
@@ -422,7 +593,7 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
                   <MaterialCommunityIcons 
                     name="close" 
                     size={24} 
-                    color={colors.text.secondary} 
+                    color={theme.text.secondary} 
                   />
                 </Pressable>
               </View>
@@ -435,172 +606,3 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  keyboardView: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'flex-end',
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: colors.background,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: spacing.md,
-    minHeight: '50%',
-  },
-  handle: {
-    width: 32,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: colors.text.secondary,
-    opacity: 0.2,
-    alignSelf: 'center',
-    marginTop: spacing.sm,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: spacing.md,
-  },
-  scrollView: {
-    padding: spacing.md,
-  },
-  title: {
-    ...typography.heading,
-    fontSize: 24,
-    fontWeight: '500' as const,
-  },
-  closeButton: {
-    padding: spacing.xs,
-    borderRadius: borderRadius.full,
-  },
-  card: {
-    ...layout.card,
-    paddingVertical: spacing.md,
-  },
-  amountContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.md,
-  },
-  currencySymbol: {
-    ...typography.heading,
-    fontSize: 32,
-    color: colors.text.primary,
-    marginRight: spacing.xs,
-    fontWeight: '500' as const,
-  },
-  input: {
-    ...typography.heading,
-    fontSize: 32,
-    color: colors.text.primary,
-    minWidth: 120,
-    textAlign: 'left',
-    padding: 0,
-    fontWeight: '500' as const,
-  },
-  currencySelector: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: spacing.sm,
-  },
-  currencyButton: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.background,
-    minWidth: 60,
-    alignItems: 'center',
-  },
-  currencyButtonActive: {
-    backgroundColor: colors.primary,
-  },
-  currencyText: {
-    ...typography.button,
-    color: colors.text.primary,
-    fontWeight: '500' as const,
-  },
-  currencyTextActive: {
-    color: colors.white,
-  },
-  conversion: {
-    ...typography.caption,
-    textAlign: 'center',
-    marginTop: spacing.md,
-    fontWeight: '500' as const,
-  },
-  qrCard: {
-    ...layout.card,
-    alignItems: 'center',
-    paddingVertical: spacing.lg,
-    marginTop: spacing.md,
-  },
-  addressContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: spacing.lg,
-    padding: spacing.sm,
-    backgroundColor: colors.background,
-    borderRadius: borderRadius.md,
-    width: '100%',
-  },
-  address: {
-    ...typography.caption,
-    flex: 1,
-    marginRight: spacing.sm,
-    fontWeight: '500' as const,
-  },
-  continueButton: {
-    marginTop: spacing.xl,
-  },
-  newRequestButton: {
-    marginTop: spacing.xl,
-    width: '100%',
-  },
-  confirmationContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.xl,
-  },
-  confirmationText: {
-    ...typography.heading,
-    color: colors.success,
-    marginTop: spacing.md,
-  },
-  txIdText: {
-    ...typography.caption,
-    color: colors.text.secondary,
-    marginTop: spacing.sm,
-  },
-  amountDisplay: {
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
-  amountText: {
-    ...typography.heading,
-    fontSize: 28,
-    color: colors.text.primary,
-    fontWeight: '600' as const,
-  },
-  btcAmount: {
-    ...typography.body,
-    color: colors.text.secondary,
-    marginTop: spacing.xs,
-  },
-  confirmationOverlay: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.xl,
-  }
-  
-}); 
