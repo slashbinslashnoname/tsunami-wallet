@@ -27,7 +27,6 @@ export function SeedVerification({ seed, onVerified, onCancel }: Props) {
 
   const styles = StyleSheet.create({
     container: {
-      padding: spacing.md,
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
@@ -35,26 +34,22 @@ export function SeedVerification({ seed, onVerified, onCancel }: Props) {
     content: {
       width: '100%',
       padding: 20,
-      justifyContent: 'center',
-      alignItems: 'center',
     },
     title: {
       fontSize: 24,
       fontWeight: 'bold',
       marginBottom: 20,
       color: theme.text.primary,
-      textAlign: 'center',
     },
     subtitle: {
       fontSize: 16,
       marginBottom: 20,
       color: theme.text.secondary,
-      textAlign: 'center',
     },
     input: {
       width: '100%',
       borderRadius: 8,
-      padding: spacing.sm,
+      padding: spacing.md,
       marginBottom: spacing.md,
       minHeight: 100,
       textAlignVertical: 'top',
