@@ -94,7 +94,6 @@ export default function ImportXPubScreen() {
 
   const handleCopySeed = async () => {
     await Clipboard.setStringAsync(generatedSeed!);
-    Alert.alert(i18n.t('common.success'), i18n.t('import.seedCopied'));
   };
 
   const styles = StyleSheet.create({
@@ -120,7 +119,7 @@ export default function ImportXPubScreen() {
       minHeight: 100,
       textAlignVertical: 'top',
       color: theme.text.primary,
-      backgroundColor: theme.white,
+      backgroundColor: theme.surface,
       ...shadows(theme).medium,
     },
     buttonContainer: {

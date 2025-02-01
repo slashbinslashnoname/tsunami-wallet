@@ -25,7 +25,7 @@ export const colors = {
   light: {
     primary: '#8B1E3F',
     secondary: '#641220',
-    background: '#F8F9FB',
+    background: '#F0F2F5',
     surface: '#FFFFFF',
     white: '#FFFFFF',
     black: '#000000',

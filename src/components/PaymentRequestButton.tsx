@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Pressable, Animated } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { colors, shadows, borderRadius } from '../theme';
+import { colors, shadows } from '../theme';
 import { useThemeMode } from '../contexts/ThemeContext';
 interface PaymentRequestButtonProps {
   onPress: () => void;

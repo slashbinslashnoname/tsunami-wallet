@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { Button } from './Button';
 import { colors, spacing, shadows } from '../theme';
 import i18n from '../i18n';
@@ -28,65 +28,87 @@ export function SeedVerification({ seed, onVerified, onCancel }: Props) {
   const styles = StyleSheet.create({
     container: {
       padding: spacing.md,
-    },
-    content: {
-      padding: 20,
       flex: 1,
       justifyContent: 'center',
+      alignItems: 'center',
+    },
+    content: {
+      width: '100%',
+      padding: 20,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     title: {
       fontSize: 24,
       fontWeight: 'bold',
       marginBottom: 20,
       color: theme.text.primary,
+      textAlign: 'center',
     },
-
+    subtitle: {
+      fontSize: 16,
+      marginBottom: 20,
+      color: theme.text.secondary,
+      textAlign: 'center',
+    },
     input: {
+      width: '100%',
       borderRadius: 8,
       padding: spacing.sm,
       marginBottom: spacing.md,
       minHeight: 100,
       textAlignVertical: 'top',
       color: theme.text.primary,
-      backgroundColor: theme.white,
+      backgroundColor: theme.surface,
       ...shadows(theme).medium,
     },
     error: {
       color: theme.error,
       marginBottom: spacing.sm,
+      textAlign: 'center',
     },
     buttonContainer: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       gap: spacing.sm,
+      width: '100%',
     },
   });
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}></View>
-      <Text style={styles.title}>{i18n.t('import.verifySeed')}</Text>
-      <TextInput
-        style={styles.input}
-        multiline
-        value={input}
-        onChangeText={setInput}
-        placeholder={i18n.t('import.enterSeed')}
-        placeholderTextColor={theme.text.secondary}
-      />
-      {error && <Text style={styles.error}>{error}</Text>}
-      <View style={styles.buttonContainer}>
-        <Button 
-          title={i18n.t('common.back')} 
-          onPress={onCancel}
-          variant="secondary"
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <View style={styles.content}>
+        <Text style={styles.title}>{i18n.t('import.verifySeed')}</Text>
+        <Text style={styles.subtitle}>{i18n.t('import.verifySubtitle')}</Text>
+        <TextInput
+          style={styles.input}
+          multiline
+          value={input}
+          onChangeText={setInput}
+          placeholder={i18n.t('import.enterSeed')}
+          placeholderTextColor={theme.text.secondary}
+          autoFocus={true}
+          autoCapitalize="none"
+          autoComplete="off"
+          autoCorrect={false}
         />
-        <Button 
-          title={i18n.t('common.verify')} 
-          onPress={handleVerify}
-          disabled={!input.trim()}
-        />
+        {error && <Text style={styles.error}>{error}</Text>}
+        <View style={styles.buttonContainer}>
+          <Button 
+            title={i18n.t('common.back')} 
+            onPress={onCancel}
+            variant="secondary"
+          />
+          <Button 
+            title={i18n.t('common.verify')} 
+            onPress={handleVerify}
+            disabled={!input.trim()}
+          />
+        </View>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 } 
