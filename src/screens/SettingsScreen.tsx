@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text, Alert, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Text, Alert, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useWallet } from '../contexts/WalletContext';
 import { StorageService } from '../services/storage';
@@ -86,54 +86,65 @@ export default function SettingsScreen() {
 
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Settings</Text>
-      
-      <View style={styles.section}>
-        {settingsItems.map((item, index) => (
-          <TouchableOpacity
-            key={item.title}
-            style={styles.settingItem}
-            onPress={item.onPress}
-          >
-            <View style={styles.settingContent}>
-              <MaterialCommunityIcons 
-                name={item.icon as any} 
-                size={24} 
-                color={colors.text.primary} 
-              />
-              <View>
-                <Text style={styles.settingText}>{item.title}</Text>
-                {item.subtitle && (
-                  <Text style={styles.settingSubtext} numberOfLines={1}>
-                    {item.subtitle}
-                  </Text>
-                )}
-              </View>
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardView}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.container}>
+            <Text style={styles.title}>Settings</Text>
+            
+            <View style={styles.section}>
+              {settingsItems.map((item, index) => (
+                <TouchableOpacity
+                  key={item.title}
+                  style={styles.settingItem}
+                  onPress={item.onPress}
+                >
+                  <View style={styles.settingContent}>
+                    <MaterialCommunityIcons 
+                      name={item.icon as any} 
+                      size={24} 
+                      color={colors.text.primary} 
+                    />
+                    <View>
+                      <Text style={styles.settingText}>{item.title}</Text>
+                      {item.subtitle && (
+                        <Text style={styles.settingSubtext} numberOfLines={1}>
+                          {item.subtitle}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                  {item.showChevron && (
+                    <MaterialCommunityIcons 
+                      name="chevron-right" 
+                      size={24} 
+                      color={colors.text.secondary} 
+                    />
+                  )}
+                </TouchableOpacity>
+              ))}
             </View>
-            {item.showChevron && (
-              <MaterialCommunityIcons 
-                name="chevron-right" 
-                size={24} 
-                color={colors.text.secondary} 
-              />
-            )}
-          </TouchableOpacity>
-        ))}
-      </View>
 
-      <View style={styles.section}>
-        <Button
-          title="Reset Wallet"
-          onPress={handleReset}
-          variant="secondary"
-        />
-      </View>
-    </View>
+            <View style={styles.section}>
+              <Button
+                title="Reset Wallet"
+                onPress={handleReset}
+                variant="secondary"
+              />
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
- 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -169,5 +180,11 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
     marginTop: spacing.xs,
     marginLeft: spacing.md,
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
 });

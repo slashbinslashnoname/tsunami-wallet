@@ -1,11 +1,21 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TextInput, Alert } from 'react-native';
+import { 
+  View, 
+  StyleSheet, 
+  TextInput, 
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useWallet } from '../contexts/WalletContext';
 import { XPubService } from '../services/xpub';
 import { StorageService } from '../services/storage';
 import { Button } from '../components/Button';
 import { BitcoinIllustration } from '../components/BitcoinIllustration';
+import { AddressService } from '../services/address';
 
 export default function ImportXPubScreen() {
   const [xpubInput, setXpubInput] = useState('');
@@ -15,9 +25,22 @@ export default function ImportXPubScreen() {
   async function handleImport() {
     setIsLoading(true);
     try {
-      const xpubData = XPubService.parseXPub(xpubInput.trim());
-      await StorageService.saveXPubData(xpubData);
-      dispatch({ type: 'SET_XPUB', payload: xpubData });
+      if (XPubService.validateFormat(xpubInput.trim())) {
+        const xpubData = XPubService.parseXPub(xpubInput.trim());
+        await StorageService.saveXPubData(xpubData);
+        dispatch({ type: 'SET_XPUB', payload: xpubData });
+      } else if (XPubService.validateMnemonic(xpubInput.trim())) {
+        const xpub = await XPubService.mnemonicToXpub(xpubInput.trim());
+        const xpubData = {
+          xpub,
+          format: AddressService.detectXpubFormat(xpub),
+          network: 'mainnet' as const,
+          derivationPath: "m/84'/0'/0'"
+        };
+        dispatch({ type: 'SET_XPUB', payload: xpubData });
+      } else {
+        throw new Error('Invalid xpub or mnemonic');
+      }
       dispatch({ type: 'SET_LOADING', payload: false });
       dispatch({ type: 'REFRESH' });
     } catch (error) {
@@ -27,28 +50,42 @@ export default function ImportXPubScreen() {
     }
   }
 
-  // Validate xpub
-  const isValidXpub = XPubService.validateFormat(xpubInput.trim());
+  function handleScanSuccess(e: { data: string }) {
+    setXpubInput(e.data);
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <BitcoinIllustration />
-      <View style={styles.content}>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter xpub/ypub/zpub"
-          value={xpubInput}
-          onChangeText={setXpubInput}
-          multiline
-          autoCapitalize="none"
-        />
-        <Button
-          title="Import"
-          onPress={handleImport}
-          isLoading={isLoading}
-          disabled={!isValidXpub}
-        />
-      </View>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardView}
+      >
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <BitcoinIllustration />
+          <View style={styles.content}>
+            <Text style={styles.subtitle}>Import xpub/ypub/zpub or mnemonic</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter xpub/ypub/zpub or mnemonic"
+              value={xpubInput}
+              onChangeText={setXpubInput}
+              multiline
+              autoCapitalize="none"
+            />
+            <View style={styles.buttonContainer}>
+              <Button
+                title="Import"
+                onPress={handleImport}
+                isLoading={isLoading}
+                disabled={!XPubService.validateFormat(xpubInput.trim()) && !XPubService.validateMnemonic(xpubInput.trim())}
+              />
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -58,8 +95,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
+  keyboardView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
   content: {
     padding: 20,
+    flex: 1,
+    justifyContent: 'center',
+  },
+  subtitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
   },
   input: {
     borderWidth: 1,
@@ -69,5 +119,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     minHeight: 100,
     textAlignVertical: 'top',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  centerText: {
+    fontSize: 18,
+    padding: 32,
+    color: '#777',
   },
 }); 

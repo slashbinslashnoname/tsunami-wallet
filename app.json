@@ -14,7 +14,11 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.slashbin.TsunamiWallet"
+      "bundleIdentifier": "com.slashbin.TsunamiWallet",
+      "infoPlist": {
+        "NSLocalNetworkUsageDescription": "This app needs access to the local network to communicate with the development server",
+        "NSBonjourServices": ["_expo._tcp"]
+      }
     },
     "android": {
       "adaptiveIcon": {
