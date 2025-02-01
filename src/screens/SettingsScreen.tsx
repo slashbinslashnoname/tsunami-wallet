@@ -13,7 +13,6 @@ import { AddressService } from '../services/address';
 import { formatAddress } from '../utils/bitcoin';
 import { useThemeMode } from '../contexts/ThemeContext';
 import i18n from '../i18n';
-import Clipboard from 'expo-clipboard';
 
 export default function SettingsScreen() {
   const colorScheme = useColorScheme();
