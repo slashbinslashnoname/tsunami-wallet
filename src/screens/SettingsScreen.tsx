@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useWallet } from '../contexts/WalletContext';
 import { StorageService } from '../services/storage';
 import { Button } from '../components/Button';
-import { colors, spacing, typography } from '../theme';
+import { colors, spacing, typography, shadows } from '../theme';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/RootNavigator';
@@ -168,6 +168,7 @@ export default function SettingsScreen() {
       borderRadius: 8,
       padding: spacing.md,
       marginBottom: spacing.md,
+      ...shadows(theme).medium,
     },
     settingItem: {
       flexDirection: 'row',

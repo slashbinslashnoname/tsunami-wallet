@@ -50,7 +50,7 @@ export default {
     generateSeed: 'New Wallet',
     backupSeed: 'Backup Your Recovery Phrase',
     seedWarning: 'Write down these 12 words in order. Never share them with anyone.',
-    verifySeed: 'Verify Recovery Phrase',
+    verifySeed: 'Verify',
     enterSeed: 'Enter your recovery phrase to verify',
     seedMismatch: 'Recovery phrase does not match',
     copySeed: 'Copy Recovery Phrase',
