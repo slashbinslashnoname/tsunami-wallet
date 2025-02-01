@@ -206,9 +206,11 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
   // Add payment monitoring
   useEffect(() => {
     if (currentAddress && step === 'qr') {
+      console.log(amount)
       const handleTransaction = (tx:any) => {
-        // Check if this transaction involves our address
-        if (tx.addresses.includes(currentAddress)) {
+        // Check if this transaction involves our address and if amount is nearly correct. Beware, amount is in fiat or btc
+        const btcAmount = currency === 'BTC' ? Number(amount) : ExchangeService.convertToBTC(Number(amount), rates[currency]);
+        if (tx.addresses.includes(currentAddress) && tx.amount >= btcAmount * 0.99) {
           setPaymentConfirmed(true);
           setCurrentTxId(tx.txid);
           

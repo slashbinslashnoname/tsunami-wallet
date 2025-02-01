@@ -23,7 +23,6 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
   const { state } = useWallet();
-console.log(state)
   return (
     <NavigationContainer>
       <Stack.Navigator>
