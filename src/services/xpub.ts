@@ -84,12 +84,7 @@ export const XPubService = {
 
 
   validateMnemonic(mnemonic: string): boolean {
-    // Validate mnemonic phrase format and word list
-    const words = mnemonic.trim().split(/\s+/);
-    if (words.length !== 12 && words.length !== 24) {
-      return false;
-    }
-    return words.every(word => bip39.wordlists.english.includes(word));
+    return bip39.validateMnemonic(mnemonic);
   },
 
   async mnemonicToXpub(mnemonic: string): Promise<string> {

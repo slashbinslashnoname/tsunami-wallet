@@ -37,9 +37,9 @@ export default {
   },
   import: {
     title: 'Importer un portefeuille',
-    placeholder: 'Entrez une xpub/ypub/zpub',
+    placeholder: 'Entrez une xpub/ypub/zpub ou vos 12/24 mots mnémonique',
     import: 'Importer',
-    invalidInput: 'xpub invalide',
+    invalidInput: 'xpub ou mnémonique invalide',
   },
   payment: {
     title: 'Demande de paiement',
