@@ -13,14 +13,14 @@ interface BalanceCardProps {
 }
 
 export function BalanceCard({ balance }: BalanceCardProps) {
-  const { themeMode } = useThemeMode();
-  const theme = themeMode === 'dark' ? colors.dark : colors.light;
+  const { theme } = useThemeMode();
+  const currentTheme = theme === 'dark' ? colors.dark : colors.light;
   const navigation = useNavigation<StackNavigationProp<any>>();
   const totalBalance = balance.confirmed + balance.unconfirmed;
 
   const styles = StyleSheet.create({
     container: {
-      ...layout(theme).card,
+      ...layout(currentTheme).card,
       marginBottom: spacing.md,
       marginLeft: spacing.md,
       marginRight: spacing.md,
@@ -32,7 +32,7 @@ export function BalanceCard({ balance }: BalanceCardProps) {
       marginBottom: spacing.sm,
     },
     label: {
-      ...typography(theme).caption,
+      ...typography(currentTheme).caption,
       textTransform: 'uppercase' as const,
       fontWeight: '500' as const,
     },
@@ -46,13 +46,13 @@ export function BalanceCard({ balance }: BalanceCardProps) {
       opacity: 0.7,
     },
     balance: {
-      ...typography(theme).heading,
+      ...typography(currentTheme).heading,
       fontSize: 36,
       marginBottom: spacing.lg,
       fontWeight: '500' as const,
     },
     details: {
-      backgroundColor: theme.background,
+      backgroundColor: currentTheme.background,
       borderRadius: borderRadius.md,
       padding: spacing.md,
     },
@@ -63,11 +63,11 @@ export function BalanceCard({ balance }: BalanceCardProps) {
       marginBottom: spacing.xs,
     },
     detailLabel: {
-      ...typography(theme).caption,
+      ...typography(currentTheme).caption,
       fontWeight: '500' as const,
     },
     detailValue: {
-      ...typography(theme).body,
+      ...typography(currentTheme).body,
       fontWeight: '500' as const,
     },
     settingsButton: {
@@ -77,11 +77,11 @@ export function BalanceCard({ balance }: BalanceCardProps) {
       alignItems: 'center',
     },
     title: {
-      ...typography(theme).heading,
+      ...typography(currentTheme).heading,
       marginBottom: spacing.sm,
     },
     unconfirmed: {
-      ...typography(theme).caption,
+      ...typography(currentTheme).caption,
       marginTop: spacing.xs,
     },
   }); 
@@ -93,7 +93,7 @@ export function BalanceCard({ balance }: BalanceCardProps) {
           style={styles.settingsButton} 
           onPress={() => navigation.navigate('Settings')}
         >
-          <MaterialCommunityIcons name="cog" size={24} color={theme.primary} />
+          <MaterialCommunityIcons name="cog" size={24} color={currentTheme.primary} />
         </TouchableOpacity>
       </View>
       

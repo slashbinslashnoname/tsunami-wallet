@@ -15,13 +15,13 @@ import { useThemeMode } from '../contexts/ThemeContext';
 import i18n from '../i18n';
 
 export default function SettingsScreen() {
-  const colorScheme = useColorScheme();
-  const { themeMode, setThemeMode } = useThemeMode();
+  const { theme, themeMode, setThemeMode } = useThemeMode();
+  const currentTheme = theme === 'dark' ? colors.dark : colors.light;
+
   const { state: walletState, dispatch: walletDispatch } = useWallet();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [nextAddress, setNextAddress] = useState('No address');
   const [currentAddress, setCurrentAddress] = useState('No address');
-  const theme = themeMode === 'dark' ? colors.dark : colors.light;
   const [showSeed, setShowSeed] = useState(false);
 
   useEffect(() => {
@@ -88,7 +88,7 @@ export default function SettingsScreen() {
   };
 
   const handleExportSeed = () => {
-    if (!walletState.xpubData?.mnemonic) {
+    if (!walletState.mnemonic) {
       Alert.alert(i18n.t('settings.noSeedStored'));
       return;
     }
@@ -106,6 +106,9 @@ export default function SettingsScreen() {
     );
   };
 
+  const handleCopySeed = () => {
+    // Implementation of handleCopySeed function
+  };
 
   const settingsItems = [
     {
@@ -156,19 +159,19 @@ export default function SettingsScreen() {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.background,
+      backgroundColor: currentTheme.background,
       padding: spacing.md,
     },
     title: {
-      ...typography(theme).heading,
+      ...typography(currentTheme).heading,
       marginBottom: spacing.lg,
     },
     section: {
-      backgroundColor: theme.card.background,
+      backgroundColor: currentTheme.card.background,
       borderRadius: 8,
       padding: spacing.md,
       marginBottom: spacing.md,
-      ...shadows(theme).medium,
+      ...shadows(currentTheme).medium,
     },
     settingItem: {
       flexDirection: 'row',
@@ -181,12 +184,12 @@ export default function SettingsScreen() {
       alignItems: 'center',
     },
     settingText: {
-      ...typography(theme).body,
+      ...typography(currentTheme).body,
       marginLeft: spacing.md,
     },
     settingSubtext: {
-      ...typography(theme).caption,
-      color: theme.text.secondary,
+      ...typography(currentTheme).caption,
+      color: currentTheme.text.secondary,
       marginTop: spacing.xs,
       marginLeft: spacing.md,
     },
@@ -197,7 +200,7 @@ export default function SettingsScreen() {
       flexGrow: 1,
     },
     seedContainer: {
-      backgroundColor: theme.surface,
+      backgroundColor: currentTheme.surface,
       padding: spacing.md,
       borderRadius: 8,
       marginTop: spacing.sm,
@@ -207,8 +210,8 @@ export default function SettingsScreen() {
       alignItems: 'flex-start',
     },
     seedText: {
-      ...typography(theme).body,
-      color: theme.text.primary,
+      ...typography(currentTheme).body,
+      color: currentTheme.text.primary,
       flex: 1,
     },
     copyButton: {
@@ -241,7 +244,7 @@ export default function SettingsScreen() {
                     <MaterialCommunityIcons 
                       name={item.icon as any} 
                       size={24} 
-                      color={theme.text.primary} 
+                      color={currentTheme.text.primary} 
                     />
                     <View>
                       <Text style={styles.settingText}>{item.title}</Text>
@@ -261,10 +264,20 @@ export default function SettingsScreen() {
                   )}
                 </TouchableOpacity>
               ))}
-               {showSeed && walletState.xpubData?.mnemonic && (
+               {showSeed && walletState.mnemonic && (
               <View style={styles.seedContainer}>
                 <View style={styles.seedRow}>
-                  <Text style={styles.seedText}>{walletState.xpubData.mnemonic}</Text>
+                  <Text style={styles.seedText}>{walletState.mnemonic}</Text>
+                  <TouchableOpacity 
+                    style={styles.copyButton}
+                    onPress={handleCopySeed}
+                  >
+                    <MaterialCommunityIcons 
+                      name="content-copy" 
+                      size={20} 
+                      color={currentTheme.text.secondary} 
+                    />
+                  </TouchableOpacity>
                 </View>
               </View>
             )}

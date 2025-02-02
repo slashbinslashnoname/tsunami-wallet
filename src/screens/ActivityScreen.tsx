@@ -16,8 +16,8 @@ import { useThemeMode } from '../contexts/ThemeContext';
 import { useWallet } from '../contexts/WalletContext';
 
 function TransactionItem({ transaction }: { transaction: Transaction }) {
-  const { themeMode } = useThemeMode();
-  const theme = themeMode === 'dark' ? colors.dark : colors.light;
+  const { theme } = useThemeMode();
+  const currentTheme = theme === 'dark' ? colors.dark : colors.light;
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
   const isIncoming = transaction.type === 'incoming';
 
@@ -35,13 +35,13 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
       flexDirection: 'row',
       marginHorizontal: spacing.md,
       marginBottom: spacing.sm,
-      ...layout(theme).card,
+      ...layout(currentTheme).card,
     },
     iconContainer: {
       width: 40,
       height: 40,
       borderRadius: 20,
-      backgroundColor: theme.background,
+      backgroundColor: currentTheme.background,
       justifyContent: 'center',
       alignItems: 'center',
       marginRight: spacing.md,
@@ -51,18 +51,18 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
       justifyContent: 'space-between',
     },
     amount: {
-      ...typography(theme).body,
+      ...typography(currentTheme).body,
       fontWeight: '600' as const,
     },
     status: {
-      ...typography(theme).caption,
-      color: theme.text.secondary,
+      ...typography(currentTheme).caption,
+      color: currentTheme.text.secondary,
       marginTop: spacing.xs,
       fontWeight: '500' as const,
     },
     address: {
-      ...typography(theme).caption,
-      color: theme.text.secondary,
+      ...typography(currentTheme).caption,
+      color: currentTheme.text.secondary,
       marginTop: spacing.xs,
     },
   });
@@ -73,7 +73,7 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
         <MaterialCommunityIcons 
           name={isIncoming ? 'arrow-bottom-left' : 'arrow-top-right'} 
           size={24} 
-          color={isIncoming ? theme.success : theme.error} 
+          color={isIncoming ? currentTheme.success : currentTheme.error} 
         />
       </View>
       <View style={styles.detailsContainer}>
@@ -92,8 +92,8 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
 }
 
 export function ActivityScreen() {
-  const { themeMode } = useThemeMode();
-  const theme = themeMode === 'dark' ? colors.dark : colors.light;
+  const { theme } = useThemeMode();
+  const currentTheme = theme === 'dark' ? colors.dark : colors.light;
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { state: walletState, dispatch } = useWallet();
@@ -119,25 +119,25 @@ export function ActivityScreen() {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.background,
+      backgroundColor: currentTheme.background,
     },
     header: {
       padding: spacing.md,
-      backgroundColor: theme.background,
+      backgroundColor: currentTheme.background,
       marginHorizontal: spacing.md,
       marginBottom: spacing.sm,
     },
     headerText: {
-      ...typography(theme).heading,
-      color: theme.text.primary,
+      ...typography(currentTheme).heading,
+      color: currentTheme.text.primary,
       fontWeight: '600' as const,
     },
     emptyState: {
       padding: spacing.xl,
     },
     emptyText: {
-      ...typography(theme).body,
-      color: theme.text.secondary,
+      ...typography(currentTheme).body,
+      color: currentTheme.text.secondary,
       marginTop: spacing.md,
       fontWeight: '500' as const,
     },
@@ -161,7 +161,7 @@ export function ActivityScreen() {
             <MaterialCommunityIcons 
               name="bell-outline" 
               size={48} 
-              color={theme.text.secondary} 
+              color={currentTheme.text.secondary} 
             />
             <Text style={styles.emptyText}>
               Waiting for new transactions...

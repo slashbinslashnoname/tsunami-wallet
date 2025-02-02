@@ -25,12 +25,12 @@ export function Button({
   variant = 'primary',
   style
 }: ButtonProps) {
-  const { themeMode } = useThemeMode();
-  const theme = themeMode === 'dark' ? colors.dark : colors.light;
+  const { theme } = useThemeMode();
+  const currentTheme = theme === 'dark' ? colors.dark : colors.light;
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: theme.primary,
+    backgroundColor: currentTheme.primary,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
     borderRadius: borderRadius.md,
@@ -39,15 +39,15 @@ const styles = StyleSheet.create({
   secondaryButton: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: theme.primary,
+    borderColor: currentTheme.primary,
   },
   text: {
-    ...typography(theme).body,
-    color: theme.white,
+    ...typography(currentTheme).body,
+    color: currentTheme.white,
     fontWeight: '600',
   },
   secondaryText: {
-    color: theme.primary,
+    color: currentTheme.primary,
   },
   disabled: {
     opacity: 0.5,

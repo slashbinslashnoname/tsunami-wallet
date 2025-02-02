@@ -33,8 +33,8 @@ export function RootNavigator() {
 
 function MainNavigator() {
   const { state } = useWallet();
-  const { themeMode } = useThemeMode();
-  const theme = themeMode === 'dark' ? colors.dark : colors.light;
+  const { theme } = useThemeMode();
+  const currentTheme = theme === 'dark' ? colors.dark : colors.light;
 
   return (
     <Stack.Navigator>
@@ -65,9 +65,9 @@ function MainNavigator() {
               headerShown: true,
               title: 'Settings',
               headerStyle: {
-                backgroundColor: theme.background,
+                backgroundColor: currentTheme.background,
               },
-              headerTintColor: theme.text.primary,
+              headerTintColor: currentTheme.text.primary,
             }} 
           />
           <Stack.Screen 
@@ -77,9 +77,9 @@ function MainNavigator() {
               headerShown: true,
               title: 'Activity',
               headerStyle: {
-                backgroundColor: theme.background,
+                backgroundColor: currentTheme.background,
               },
-              headerTintColor: theme.text.primary
+              headerTintColor: currentTheme.text.primary
             }}
           />
         </>

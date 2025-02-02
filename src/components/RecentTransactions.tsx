@@ -20,8 +20,8 @@ type RootStackParamList = {
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 function TransactionItem({ transaction, index }: { transaction: Transaction; index: number }) {
-  const { themeMode } = useThemeMode();
-  const theme = themeMode === 'dark' ? colors.dark : colors.light;
+  const { theme } = useThemeMode();
+  const currentTheme = theme === 'dark' ? colors.dark : colors.light;
   const isIncoming = transaction.type === 'incoming';
   const amount = `${isIncoming ? '+' : '-'}${Math.abs(transaction.amount).toFixed(8)} BTC`;
   const date = new Date(transaction.timestamp).toLocaleDateString();
@@ -53,13 +53,13 @@ function TransactionItem({ transaction, index }: { transaction: Transaction; ind
       paddingVertical: spacing.sm,
       marginBottom: spacing.sm,
       borderBottomWidth: 1,
-      borderBottomColor: theme.card.border,
+      borderBottomColor: currentTheme.card.border,
     },
     iconContainer: {
       width: 40,
       height: 40,
       borderRadius: borderRadius.full,
-      backgroundColor: theme.background,
+      backgroundColor: currentTheme.background,
       justifyContent: 'center',
       alignItems: 'center',
       marginRight: spacing.sm,
@@ -79,34 +79,34 @@ function TransactionItem({ transaction, index }: { transaction: Transaction; ind
     },
 
     transactionType: {
-      ...typography(theme).body,
+      ...typography(currentTheme).body,
       fontWeight: '500' as const,
     },
     date: {
-      ...typography(theme).caption,
+      ...typography(currentTheme).caption,
     },
     amount: {
-      ...typography(theme).body,
+      ...typography(currentTheme).body,
       textAlign: 'right',
       fontWeight: '600' as const,
     },
     incoming: {
-      color: theme.primary,
+      color: currentTheme.primary,
     },
     outgoing: {
-      color: theme.primary,
+      color: currentTheme.primary,
     },
     status: {
-      ...typography(theme).caption,
+      ...typography(currentTheme).caption,
       textAlign: 'right',
       fontWeight: '500' as const,
     },
     confirmed: {
-      color: theme.text.primary,
+      color: currentTheme.text.primary,
     },
     address: {
-      ...typography(theme).caption,
-      color: theme.text.secondary,
+      ...typography(currentTheme).caption,
+      color: currentTheme.text.secondary,
     },
   });
 
@@ -116,7 +116,7 @@ function TransactionItem({ transaction, index }: { transaction: Transaction; ind
         <MaterialCommunityIcons 
           name={isIncoming ? 'arrow-bottom-left' : 'arrow-top-right'} 
           size={24} 
-          color={isIncoming ? theme.success : theme.error} 
+          color={isIncoming ? currentTheme.success : currentTheme.error} 
         />
       </View>
       <View style={styles.detailsContainer}>
@@ -148,15 +148,15 @@ export function RecentTransactions({
   transactions: Transaction[]; 
   isLoading: boolean;
 }) {
-  const { themeMode } = useThemeMode();
-  const theme = themeMode === 'dark' ? colors.dark : colors.light;
+  const { theme } = useThemeMode();
+  const currentTheme = theme === 'dark' ? colors.dark : colors.light;
   const navigation = useNavigation<NavigationProp>();
   const sortedTransactions = [...transactions].sort((a, b) => b.timestamp - a.timestamp);
   const recentTransactions = sortedTransactions.slice(0, number);
 
   const styles = StyleSheet.create({
     container: {
-      ...layout(theme).card,
+      ...layout(currentTheme).card,
       marginHorizontal: spacing.md,
     },
     header: {
@@ -166,7 +166,7 @@ export function RecentTransactions({
       marginBottom: spacing.lg,
     },
     title: {
-      ...typography(theme).subheading,
+      ...typography(currentTheme).subheading,
     },
     viewAllButton: {
       flexDirection: 'row',
@@ -175,8 +175,8 @@ export function RecentTransactions({
       borderRadius: borderRadius.sm,
     },
     viewAll: {
-      ...typography(theme).button,
-      color: theme.primary,
+      ...typography(currentTheme).button,
+      color: currentTheme.primary,
       marginRight: spacing.xs,
     },
     
@@ -184,14 +184,14 @@ export function RecentTransactions({
       padding: spacing.xl,
     },
     emptyState: {
-      ...layout(theme).center,
+      ...layout(currentTheme).center,
       padding: spacing.xl,
       alignItems: 'center' as const,
       justifyContent: 'center' as const,
     },
     emptyText: {
-      ...typography(theme).body,
-      color: theme.text.secondary,
+      ...typography(currentTheme).body,
+      color: currentTheme.text.secondary,
       marginTop: spacing.sm,
     },
   });
@@ -199,7 +199,7 @@ export function RecentTransactions({
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator style={styles.loader} color={theme.primary} />
+        <ActivityIndicator style={styles.loader} color={currentTheme.primary} />
       </View>
     );
   }
@@ -220,7 +220,7 @@ export function RecentTransactions({
             <MaterialCommunityIcons 
               name="chevron-right" 
               size={20} 
-              color={theme.primary} 
+              color={currentTheme.primary} 
             />
           </Pressable>
         )}
@@ -235,7 +235,7 @@ export function RecentTransactions({
           <MaterialCommunityIcons 
             name="currency-btc" 
             size={48} 
-            color={theme.text.secondary} 
+            color={currentTheme.text.secondary} 
           />
           <Text style={styles.emptyText}>No transactions yet</Text>
         </View>

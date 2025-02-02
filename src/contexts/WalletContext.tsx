@@ -12,6 +12,7 @@ interface WalletState {
   xpubData: XPubData | null;
   index: number;
   isRefreshing: boolean;
+  mnemonic: string | null;
 }
 
 type WalletAction =
@@ -24,7 +25,8 @@ type WalletAction =
   | { type: 'SET_REFRESHING'; payload: boolean }
   | { type: 'REFRESH' }
   | { type: 'RESET' }
-  | { type: 'ADD_TRANSACTION'; payload: Transaction };
+  | { type: 'ADD_TRANSACTION'; payload: Transaction }
+  | { type: 'SET_MNEMONIC'; payload: string | null };
 
 const initialState: WalletState = {
   xpubData: null,
@@ -37,6 +39,7 @@ const initialState: WalletState = {
   index: 0,
   isLoading: true,
   isRefreshing: false,
+  mnemonic: null,
 };
 
 const WalletContext = createContext<{
@@ -71,7 +74,7 @@ function walletReducer(state: WalletState, action: WalletAction): WalletState {
     case 'REFRESH':
       return { ...state, isRefreshing: state.isRefreshing ? false : true };
     case 'RESET':
-      return initialState;
+      return { ...initialState, mnemonic: null };
     case 'ADD_TRANSACTION':
       const isIncoming = action.payload.type === 'incoming';
       const amount = action.payload.amount;
@@ -89,6 +92,8 @@ function walletReducer(state: WalletState, action: WalletAction): WalletState {
             state.balance.unconfirmed
         }
       };
+    case 'SET_MNEMONIC':
+      return { ...state, mnemonic: action.payload };
     default:
       return state;
   }

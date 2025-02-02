@@ -37,8 +37,8 @@ interface PaymentRequestProps {
 }
 
 export default function PaymentRequest({ onClose }: PaymentRequestProps) {
-  const { themeMode } = useThemeMode();
-  const theme = themeMode === 'dark' ? colors.dark : colors.light;
+  const { theme } = useThemeMode();
+  const currentTheme = theme === 'dark' ? colors.dark : colors.light;
 
   const { state: walletState, dispatch } = useWallet();
   const { state: settingsState } = useSettings();
@@ -74,7 +74,7 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
       justifyContent: 'flex-end',
     },
     modalContent: {
-      backgroundColor: theme.background,
+      backgroundColor: currentTheme.background,
       borderTopLeftRadius: 20,
       borderTopRightRadius: 20,
       padding: spacing.md,
@@ -84,7 +84,7 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
       width: 32,
       height: 4,
       borderRadius: 2,
-      backgroundColor: theme.text.secondary,
+      backgroundColor: currentTheme.text.secondary,
       opacity: 0.2,
       alignSelf: 'center',
       marginTop: spacing.sm,
@@ -99,7 +99,7 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
       padding: spacing.md,
     },
     title: {
-      ...typography(theme).heading,
+      ...typography(currentTheme).heading,
       fontSize: 24,
       fontWeight: '500' as const,
     },
@@ -108,7 +108,7 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
       borderRadius: borderRadius.full,
     },
     card: {
-      ...layout(theme).card,
+      ...layout(currentTheme).card,
       paddingVertical: spacing.md,
     },
     amountContainer: {
@@ -118,16 +118,16 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
       marginBottom: spacing.md,
     },
     currencySymbol: {
-      ...typography(theme).heading,
+      ...typography(currentTheme).heading,
       fontSize: 32,
-      color: theme.text.primary,
+      color: currentTheme.text.primary,
       marginRight: spacing.xs,
       fontWeight: '500' as const,
     },
     input: {
-      ...typography(theme).heading,
+      ...typography(currentTheme).heading,
       fontSize: 32,
-      color: theme.text.primary,
+      color: currentTheme.text.primary,
       minWidth: 120,
       textAlign: 'left',
       padding: 0,
@@ -142,29 +142,29 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
       paddingVertical: spacing.sm,
       paddingHorizontal: spacing.md,
       borderRadius: borderRadius.full,
-      backgroundColor: theme.background,
+      backgroundColor: currentTheme.background,
       minWidth: 60,
       alignItems: 'center',
     },
     currencyButtonActive: {
-      backgroundColor: theme.primary,
+      backgroundColor: currentTheme.primary,
     },
     currencyText: {
-      ...typography(theme).button,
-      color: theme.text.primary,
+      ...typography(currentTheme).button,
+      color: currentTheme.text.primary,
       fontWeight: '500' as const,
     },
     currencyTextActive: {
-      color: theme.white,
+        color: currentTheme.white,
     },
     conversion: {
-      ...typography(theme).caption,
+      ...typography(currentTheme).caption,
       textAlign: 'center',
       marginTop: spacing.md,
       fontWeight: '500' as const,
     },
     qrCard: {
-      ...layout(theme).card,
+      ...layout(currentTheme).card,
       alignItems: 'center',
       paddingVertical: spacing.lg,
       marginTop: spacing.md,
@@ -174,12 +174,12 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
       alignItems: 'center',
       marginTop: spacing.lg,
       padding: spacing.sm,
-      backgroundColor: theme.background,
+      backgroundColor: currentTheme.background,
       borderRadius: borderRadius.md,
       width: '100%',
     },
     address: {
-      ...typography(theme).caption,
+      ...typography(currentTheme).caption,
       flex: 1,
       marginRight: spacing.sm,
       fontWeight: '500' as const,
@@ -197,13 +197,13 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
       padding: spacing.xl,
     },
     confirmationText: {
-      ...typography(theme).heading,
-      color: theme.success,
+      ...typography(currentTheme).heading,
+      color: currentTheme.success,
       marginTop: spacing.md,
     },
     txIdText: {
-      ...typography(theme).caption,
-      color: theme.text.secondary,
+      ...typography(currentTheme).caption,
+      color: currentTheme.text.secondary,
       marginTop: spacing.sm,
     },
     amountDisplay: {
@@ -211,14 +211,14 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
       marginBottom: spacing.xl,
     },
     amountText: {
-      ...typography(theme).heading,
+      ...typography(currentTheme).heading,
       fontSize: 28,
-      color: theme.text.primary,
+      color: currentTheme.text.primary,
       fontWeight: '600' as const,
     },
     btcAmount: {
-      ...typography(theme).body,
-      color: theme.text.secondary,
+      ...typography(currentTheme).body,
+      color: currentTheme.text.secondary,
       marginTop: spacing.xs,
     },
     confirmationOverlay: {
@@ -422,7 +422,7 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
           value={amount}
           onChangeText={handleAmountChange}
           keyboardType="decimal-pad"
-          placeholderTextColor={theme.text.secondary}
+          placeholderTextColor={currentTheme.text.secondary}
           autoFocus
         />
       </View>
@@ -486,7 +486,7 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
           <MaterialCommunityIcons 
             name="check-circle" 
             size={64} 
-            color={theme.success} 
+            color={currentTheme.success} 
           />
           <Text style={styles.confirmationText}>Payment Received!</Text>
           <Text style={styles.txIdText} numberOfLines={1}>
@@ -498,8 +498,8 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
           <QRCode
             value={qrData}
             size={240}
-            backgroundColor={theme.white}
-            color={theme.black}
+            backgroundColor={currentTheme.white}
+            color={currentTheme.black}
           />
           <Pressable 
             style={styles.addressContainer}
@@ -515,7 +515,7 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
             <MaterialCommunityIcons 
               name={copied ? "check" : "content-copy"} 
               size={20} 
-              color={copied ? theme.success : theme.text.secondary} 
+              color={copied ? currentTheme.success : currentTheme.text.secondary} 
             />
           </Pressable>
         </>
@@ -545,7 +545,7 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
           <MaterialCommunityIcons 
             name="check-circle" 
             size={64} 
-            color={theme.success} 
+            color={currentTheme.success} 
           />
           <Text style={styles.confirmationText}>Payment Received!</Text>
           <Text style={styles.txIdText}>{currentTxId}</Text>
@@ -593,7 +593,7 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
                   <MaterialCommunityIcons 
                     name="close" 
                     size={24} 
-                    color={theme.text.secondary} 
+                    color={currentTheme.text.secondary} 
                   />
                 </Pressable>
               </View>

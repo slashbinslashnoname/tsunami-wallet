@@ -5,8 +5,8 @@ import { colors } from '../theme';
 import i18n from '../i18n';
 
 export function BitcoinIllustration() {
-  const { themeMode } = useThemeMode();
-  const theme = themeMode === 'dark' ? colors.dark : colors.light;
+  const { theme } = useThemeMode();
+  const currentTheme = theme === 'dark' ? colors.dark : colors.light;
 
 const styles = StyleSheet.create({
   container: {
@@ -23,12 +23,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: theme.text.primary,
+    color: currentTheme.text.primary,
     marginBottom: 10,
   },
   subtitle: {
     fontSize: 18,
-    color: theme.text.secondary,
+    color: currentTheme.text.secondary,
     marginBottom: 20,
   }
 }); 

@@ -16,8 +16,8 @@ import PaymentRequest from '../screens/PaymentRequestModal';
 import { useThemeMode } from '../contexts/ThemeContext';
 import { colors } from '../theme';
 export default function HomeScreen() {
-  const { themeMode } = useThemeMode();
-  const theme = themeMode === 'dark' ? colors.dark : colors.light;
+  const { theme } = useThemeMode();
+  const currentTheme = theme === 'dark' ? colors.dark : colors.light;
   const { state, dispatch } = useWallet();
   const [isPaymentRequestVisible, setPaymentRequestVisible] = useState(false);
 
@@ -28,7 +28,7 @@ export default function HomeScreen() {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.background,
+      backgroundColor: currentTheme.background,
     },
     keyboardView: {
       flex: 1,

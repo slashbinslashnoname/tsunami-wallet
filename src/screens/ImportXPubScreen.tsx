@@ -26,8 +26,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 
 export default function ImportXPubScreen() {
-  const { themeMode } = useThemeMode();
-  const theme = themeMode === 'dark' ? colors.dark : colors.light;
+  const { theme } = useThemeMode();
+  const currentTheme = theme === 'dark' ? colors.dark : colors.light;
   const [xpubInput, setXpubInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { dispatch } = useWallet();
@@ -76,11 +76,11 @@ export default function ImportXPubScreen() {
         xpub,
         format: AddressService.detectXpubFormat(xpub),
         network: 'mainnet' as const,
-        derivationPath: "m/84'/0'/0'",
-        mnemonic: generatedSeed || undefined
+        derivationPath: "m/84'/0'/0'"
       };
       await StorageService.saveXPubData(xpubData);
       dispatch({ type: 'SET_XPUB', payload: xpubData });
+      dispatch({ type: 'SET_MNEMONIC', payload: generatedSeed });
       dispatch({ type: 'SET_LOADING', payload: false });
       dispatch({ type: 'REFRESH' });
     } catch (error) {
@@ -99,7 +99,7 @@ export default function ImportXPubScreen() {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.background,
+      backgroundColor: currentTheme.background,
     },
     keyboardView: {
       flex: 1,
@@ -118,9 +118,9 @@ export default function ImportXPubScreen() {
       marginBottom: 20,
       minHeight: 100,
       textAlignVertical: 'top',
-      color: theme.text.primary,
-      backgroundColor: theme.surface,
-      ...shadows(theme).medium,
+      color: currentTheme.text.primary,
+      backgroundColor: currentTheme.surface,
+      ...shadows(currentTheme).medium,
     },
     buttonContainer: {
       flexDirection: 'row',
@@ -129,19 +129,19 @@ export default function ImportXPubScreen() {
     centerText: {
       fontSize: 18,
       padding: 32,
-      color: theme.text.secondary,
+      color: currentTheme.text.secondary,
     },
     title: {
       fontSize: 24,
       fontWeight: 'bold',
       marginBottom: 20,
-      color: theme.text.primary,
+      color: currentTheme.text.primary,
     },
     seedContainer: {
-      backgroundColor: theme.surface,
+      backgroundColor: currentTheme.surface,
       padding: spacing.md,
       borderRadius: 8,
-      ...shadows(theme).medium,
+      ...shadows(currentTheme).medium,
       
       marginBottom: spacing.lg,
     },
@@ -151,8 +151,8 @@ export default function ImportXPubScreen() {
       marginBottom: spacing.md,
     },
     seedText: {
-      ...typography(theme).body,
-      color: theme.text.primary,
+      ...typography(currentTheme).body,
+      color: currentTheme.text.primary,
       flex: 1,
     },
     copyButton: {
@@ -160,8 +160,8 @@ export default function ImportXPubScreen() {
       marginLeft: spacing.xs,
     },
     warning: {
-      ...typography(theme).caption,
-      color: theme.text.secondary,
+      ...typography(currentTheme).caption,
+      color: currentTheme.text.secondary,
       marginBottom: spacing.md,
     },
   }); 
@@ -196,7 +196,7 @@ export default function ImportXPubScreen() {
                 <MaterialCommunityIcons 
                   name="content-copy" 
                   size={20} 
-                  color={theme.text.secondary} 
+                  color={currentTheme.text.secondary} 
                 />
               </TouchableOpacity>
             </View>
@@ -235,7 +235,7 @@ export default function ImportXPubScreen() {
             <TextInput
               style={styles.input}
               placeholder={i18n.t('import.placeholder')}
-              placeholderTextColor={theme.text.secondary}
+              placeholderTextColor={currentTheme.text.secondary}
               value={xpubInput}
               onChangeText={setXpubInput}
               multiline

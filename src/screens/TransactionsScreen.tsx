@@ -9,8 +9,8 @@ import { colors, spacing, typography, layout, borderRadius } from '../theme';
 import { useThemeMode } from '../contexts/ThemeContext';
 
 function TransactionItem({ transaction }: { transaction: Transaction }) {
-  const { themeMode } = useThemeMode();
-  const theme = themeMode === 'dark' ? colors.dark : colors.light;
+  const { theme } = useThemeMode();
+  const currentTheme = theme === 'dark' ? colors.dark : colors.light;
   const isIncoming = transaction.type === "incoming";
   const amount = transaction.amount.toFixed(8);
   const date = new Date(transaction.timestamp).toLocaleDateString();
@@ -26,13 +26,13 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
       flexDirection: 'row',
       alignItems: 'center',
       marginBottom: spacing.sm,
-      ...layout(theme).card,
+      ...layout(currentTheme).card,
     },
     iconContainer: {
       width: 40,
       height: 40,
       borderRadius: borderRadius.full,
-      backgroundColor: theme.background,
+      backgroundColor: currentTheme.background,
       justifyContent: 'center',
       alignItems: 'center',
       marginRight: spacing.md,
@@ -44,34 +44,34 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
       alignItems: 'center',
     },
     transactionType: {
-      ...typography(theme).body,
+      ...typography(currentTheme).body,
       fontWeight: '500',
     },
     date: {
-      ...typography(theme).caption,
-      color: theme.text.secondary,
+      ...typography(currentTheme).caption,
+      color: currentTheme.text.secondary,
     },
     amount: {
-      ...typography(theme).body,
+      ...typography(currentTheme).body,
       textAlign: 'right',
       fontWeight: '600',
     },
     currency: {
-      color: theme.primary,
+      color: currentTheme.primary,
     },
     incoming: {
-      color: theme.primary,
+      color: currentTheme.primary,
     },
     outgoing: {
-      color: theme.primary,
+      color: currentTheme.primary,
     },
     status: {
-      ...typography(theme).caption,
-      color: theme.text.secondary,
+      ...typography(currentTheme).caption,
+      color: currentTheme.text.secondary,
       textAlign: 'right',
     },
     confirmed: {
-      color: theme.primary,
+      color: currentTheme.primary,
     },
   });
 
@@ -81,7 +81,7 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
         <MaterialCommunityIcons 
           name={isIncoming ? 'arrow-bottom-left' : 'arrow-top-right'} 
           size={24} 
-          color={isIncoming ? theme.success : theme.error} 
+          color={isIncoming ? currentTheme.success : currentTheme.error} 
         />
       </View>
       <View style={styles.detailsContainer}>
@@ -109,8 +109,8 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
 const TRANSACTIONS_PER_PAGE = 20;
 
 export default function TransactionsScreen() {
-  const { themeMode } = useThemeMode();
-  const theme = themeMode === 'dark' ? colors.dark : colors.light;
+  const { theme } = useThemeMode();
+  const currentTheme = theme === 'dark' ? colors.dark : colors.light;
   const navigation = useNavigation();
   const { state: walletState, dispatch } = useWallet();
   const [isRefreshing, setIsRefreshing] = React.useState(false);
@@ -120,7 +120,7 @@ export default function TransactionsScreen() {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.background,
+      backgroundColor: currentTheme.background,
     },
     header: {
       flexDirection: 'row',
@@ -128,7 +128,7 @@ export default function TransactionsScreen() {
       justifyContent: 'space-between',
       padding: spacing.md,
       borderBottomWidth: 1,
-      borderBottomColor: theme.border,
+      borderBottomColor: currentTheme.border,
     },
     backButton: {
       width: 40,
@@ -138,7 +138,7 @@ export default function TransactionsScreen() {
       borderRadius: borderRadius.full,
     },
     title: {
-      ...typography(theme).heading,
+      ...typography(currentTheme).heading,
       fontSize: 20,
     },
     listContent: {
@@ -155,25 +155,25 @@ export default function TransactionsScreen() {
       padding: spacing.xl,
     },
     emptyText: {
-      ...typography(theme).body,
-      color: theme.text.secondary,
+      ...typography(currentTheme).body,
+      color: currentTheme.text.secondary,
       marginTop: spacing.sm,
     },
     loadMoreButton: {
       alignItems: 'center',
       justifyContent: 'center',
       padding: spacing.md,
-      backgroundColor: theme.white,
+      backgroundColor: currentTheme.white,
       borderRadius: borderRadius.md,
       marginTop: spacing.md,
     },
     loadMoreText: {
-      ...typography(theme).body,
-      color: theme.primary,
+      ...typography(currentTheme).body,
+      color: currentTheme.primary,
     },
     address: {
-      ...typography(theme).caption,
-      color: theme.text.secondary,
+      ...typography(currentTheme).caption,
+      color: currentTheme.text.secondary,
     },
   });
 
@@ -210,7 +210,7 @@ export default function TransactionsScreen() {
           <MaterialCommunityIcons 
             name="arrow-left" 
             size={24} 
-            color={theme.text.primary} 
+            color={currentTheme.text.primary} 
           />
         </Pressable>
         <Text style={styles.title}>Transactions</Text>
@@ -225,7 +225,7 @@ export default function TransactionsScreen() {
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={onRefresh}
-            tintColor={theme.primary}
+            tintColor={currentTheme.primary}
           />
         }
         ListEmptyComponent={
@@ -233,7 +233,7 @@ export default function TransactionsScreen() {
             <MaterialCommunityIcons 
               name="currency-btc" 
               size={48} 
-              color={theme.text.secondary} 
+              color={currentTheme.text.secondary} 
             />
             <Text style={styles.emptyText}>No transactions yet</Text>
           </View>
@@ -245,7 +245,7 @@ export default function TransactionsScreen() {
               onPress={loadMore}
             >
               {isLoadingMore ? (
-                <ActivityIndicator color={theme.primary} />
+                <ActivityIndicator color={currentTheme.primary} />
               ) : (
                 <Text style={styles.loadMoreText}>Load More</Text>
               )}

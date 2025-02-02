@@ -12,8 +12,8 @@ interface Props {
 }
 
 export function SeedVerification({ seed, onVerified, onCancel }: Props) {
-  const { themeMode } = useThemeMode();
-  const theme = themeMode === 'dark' ? colors.dark : colors.light;
+  const { theme } = useThemeMode();
+  const currentTheme = theme === 'dark' ? colors.dark : colors.light;
   const [input, setInput] = useState('');
   const [error, setError] = useState('');
 
@@ -39,12 +39,12 @@ export function SeedVerification({ seed, onVerified, onCancel }: Props) {
       fontSize: 24,
       fontWeight: 'bold',
       marginBottom: 20,
-      color: theme.text.primary,
+      color: currentTheme.text.primary,
     },
     subtitle: {
       fontSize: 16,
       marginBottom: 20,
-      color: theme.text.secondary,
+      color: currentTheme.text.secondary,
     },
     input: {
       width: '100%',
@@ -53,12 +53,12 @@ export function SeedVerification({ seed, onVerified, onCancel }: Props) {
       marginBottom: spacing.md,
       minHeight: 100,
       textAlignVertical: 'top',
-      color: theme.text.primary,
-      backgroundColor: theme.surface,
-      ...shadows(theme).medium,
+      color: currentTheme.text.primary,
+      backgroundColor: currentTheme.surface,
+      ...shadows(currentTheme).medium,
     },
     error: {
-      color: theme.error,
+      color: currentTheme.error,
       marginBottom: spacing.sm,
       textAlign: 'center',
     },
@@ -84,7 +84,7 @@ export function SeedVerification({ seed, onVerified, onCancel }: Props) {
           value={input}
           onChangeText={setInput}
           placeholder={i18n.t('import.enterSeed')}
-          placeholderTextColor={theme.text.secondary}
+          placeholderTextColor={currentTheme.text.secondary}
           autoFocus={true}
           autoCapitalize="none"
           autoComplete="off"

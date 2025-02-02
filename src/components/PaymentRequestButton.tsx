@@ -8,8 +8,8 @@ interface PaymentRequestButtonProps {
 }
 
 export function PaymentRequestButton({ onPress }: PaymentRequestButtonProps) {
-  const { themeMode } = useThemeMode();
-  const theme = themeMode === 'dark' ? colors.dark : colors.light;
+  const { theme } = useThemeMode();
+  const currentTheme = theme === 'dark' ? colors.dark : colors.light;
   const scaleAnim = React.useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
@@ -32,19 +32,19 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 24,
     right: 24,
-    ...shadows(theme).large,
+    ...shadows(currentTheme).large,
   },
   button: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: theme.primary,
+    backgroundColor: currentTheme.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    ...shadows(theme).medium,
+    ...shadows(currentTheme).medium,
   },
   buttonPressed: {
-    backgroundColor: theme.secondary,
+    backgroundColor: currentTheme.secondary,
   },
 }); 
 
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
         <MaterialCommunityIcons 
           name="plus" 
           size={32} 
-          color={theme.white} 
+          color={currentTheme.white} 
         />
       </Pressable>
     </Animated.View>

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useColorScheme } from 'react-native';
+import { useColorScheme, ColorSchemeName } from 'react-native';
 import { StorageService } from '../services/storage';
 
 type ThemeMode = 'light' | 'dark' | 'system';
@@ -7,13 +7,13 @@ type ThemeMode = 'light' | 'dark' | 'system';
 interface ThemeContextType {
   themeMode: ThemeMode;
   setThemeMode: (mode: ThemeMode) => void;
-  currentTheme: 'light' | 'dark';
+  theme: 'light' | 'dark';
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const systemTheme = useColorScheme();
+  const systemColorScheme = useColorScheme();
   const [themeMode, setThemeModeState] = useState<ThemeMode>('system');
 
   useEffect(() => {
@@ -30,12 +30,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     await StorageService.saveThemeMode(mode);
   };
 
-  const currentTheme = themeMode === 'system' 
-    ? systemTheme || 'light'
-    : themeMode;
+  // Determine actual theme based on mode and system settings
+  const theme = React.useMemo(() => {
+    if (themeMode === 'system') {
+      return systemColorScheme || 'light';
+    }
+    return themeMode;
+  }, [themeMode, systemColorScheme]);
 
   return (
-    <ThemeContext.Provider value={{ themeMode, setThemeMode, currentTheme }}>
+    <ThemeContext.Provider value={{ themeMode, setThemeMode, theme }}>
       {children}
     </ThemeContext.Provider>
   );
