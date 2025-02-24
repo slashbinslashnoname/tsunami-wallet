@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ExchangeService } from '../services/exchange';
 
 interface Settings {
   currency: 'BTC' | 'USD' | 'EUR';
@@ -20,6 +21,7 @@ interface SettingsState {
 type SettingsAction =
   | { type: 'SET_SETTINGS'; payload: Settings }
   | { type: 'UPDATE_SETTING'; payload: Partial<Settings> }
+  | { type: 'UPDATE_EXCHANGE_RATES'; payload: { USD: number; EUR: number } }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
   | { type: 'RESET' };
@@ -56,6 +58,14 @@ function settingsReducer(state: SettingsState, action: SettingsAction): Settings
         ...state,
         settings: { ...state.settings, ...action.payload },
       };
+    case 'UPDATE_EXCHANGE_RATES':
+      return {
+        ...state,
+        settings: {
+          ...state.settings,
+          exchangeRates: action.payload
+        }
+      };
     case 'SET_LOADING':
       return { ...state, isLoading: action.payload };
     case 'SET_ERROR':
@@ -72,6 +82,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     loadSettings();
+    fetchExchangeRates();
+    
+    const interval = setInterval(fetchExchangeRates, 5 * 60 * 1000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   async function loadSettings() {
@@ -113,6 +128,15 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         type: 'SET_ERROR', 
         payload: 'Failed to reset settings' 
       });
+    }
+  }
+
+  async function fetchExchangeRates() {
+    try {
+      const rates = await ExchangeService.fetchRates();
+      dispatch({ type: 'UPDATE_EXCHANGE_RATES', payload: rates });
+    } catch (error) {
+      console.error('Failed to fetch exchange rates:', error);
     }
   }
 

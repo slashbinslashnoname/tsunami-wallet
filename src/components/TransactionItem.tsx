@@ -18,8 +18,9 @@ export function TransactionItem({ transaction, index, onPress }: TransactionItem
   const currentTheme = theme === 'dark' ? colors.dark : colors.light;
   const { state } = useSettings();
   const { currency = 'BTC', exchangeRates = { USD: 0, EUR: 0 } } = state?.settings || {};
+  console.log(exchangeRates)
   const isIncoming = transaction.type === 'incoming';
-  const date = new Date(transaction.timestamp).toLocaleDateString();
+  const date = new Date(transaction.timestamp).toLocaleString();
 
   // Get the relevant address to display
   const displayAddress = isIncoming 
@@ -141,7 +142,7 @@ export function TransactionItem({ transaction, index, onPress }: TransactionItem
             </Text>
           )}
           <Text style={[styles.status, transaction.confirmations > 0 && styles.confirmed]}>
-            {transaction.status === 'pending' ? i18n.t('transactions.pending') : i18n.t('transactions.confirmed')}
+            {transaction.status === 'pending' ? i18n.t('transactions.pending') : ""}
           </Text>
         </View>
       </View>
