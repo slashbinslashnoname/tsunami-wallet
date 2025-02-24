@@ -18,7 +18,7 @@ import { Button } from '../components/Button';
 import { BitcoinIllustration } from '../components/BitcoinIllustration';
 import { AddressService } from '../services/address';
 import { useThemeMode } from '../contexts/ThemeContext';
-import { shadows, colors, spacing, typography } from '../theme';
+import { shadows, colors, spacing, typography, borderRadius } from '../theme';
 import i18n from '../i18n';
 import * as bip39 from 'bip39';
 import { SeedVerification } from '../components/SeedVerification';
@@ -108,42 +108,42 @@ export default function ImportXPubScreen() {
       flexGrow: 1,
     },
     content: {
-      padding: 20,
+      padding: spacing.lg,
       flex: 1,
       justifyContent: 'center',
     },
     input: {
-      borderRadius: 8,
-      padding: 12,
-      marginBottom: 20,
-      minHeight: 100,
+      borderRadius: borderRadius.md,
+      padding: spacing.md,
+      marginBottom: spacing.lg,
+      minHeight: 120,
       textAlignVertical: 'top',
       color: currentTheme.text.primary,
       backgroundColor: currentTheme.surface,
       ...shadows(currentTheme).medium,
+      borderWidth: 1,
+      borderColor: currentTheme.card.border,
     },
     buttonContainer: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-    },
-    centerText: {
-      fontSize: 18,
-      padding: 32,
-      color: currentTheme.text.secondary,
+      gap: spacing.md,
     },
     title: {
-      fontSize: 24,
+      ...typography(currentTheme).heading,
+      fontSize: 28,
       fontWeight: 'bold',
-      marginBottom: 20,
+      marginBottom: spacing.md,
       color: currentTheme.text.primary,
     },
     seedContainer: {
       backgroundColor: currentTheme.surface,
-      padding: spacing.md,
-      borderRadius: 8,
+      padding: spacing.lg,
+      borderRadius: borderRadius.md,
       ...shadows(currentTheme).medium,
-      
-      marginBottom: spacing.lg,
+      borderWidth: 1,
+      borderColor: currentTheme.error,
+      marginBottom: spacing.xl,
     },
     seedRow: {
       flexDirection: 'row',
@@ -154,15 +154,17 @@ export default function ImportXPubScreen() {
       ...typography(currentTheme).body,
       color: currentTheme.text.primary,
       flex: 1,
+      lineHeight: 24,
     },
     copyButton: {
       padding: spacing.xs,
       marginLeft: spacing.xs,
     },
     warning: {
-      ...typography(currentTheme).caption,
-      color: currentTheme.text.secondary,
-      marginBottom: spacing.md,
+      ...typography(currentTheme).body,
+      color: currentTheme.error,
+      marginBottom: spacing.lg,
+      fontWeight: '500',
     },
   }); 
 

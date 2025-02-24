@@ -16,9 +16,8 @@ interface TransactionItemProps {
 export function TransactionItem({ transaction, index, onPress }: TransactionItemProps) {
   const { theme } = useThemeMode();
   const currentTheme = theme === 'dark' ? colors.dark : colors.light;
-  const { settings } = useSettings();
-  const { currency, exchangeRates } = settings;
-  
+  const { state } = useSettings();
+  const { currency = 'BTC', exchangeRates = { USD: 0, EUR: 0 } } = state?.settings || {};
   const isIncoming = transaction.type === 'incoming';
   const date = new Date(transaction.timestamp).toLocaleDateString();
 
@@ -47,19 +46,19 @@ export function TransactionItem({ transaction, index, onPress }: TransactionItem
     transactionItem: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingVertical: spacing.sm,
+      paddingVertical: spacing.md,
       marginBottom: spacing.sm,
       borderBottomWidth: 1,
       borderBottomColor: currentTheme.card.border,
     },
     iconContainer: {
-      width: 40,
-      height: 40,
+      width: 44,
+      height: 44,
       borderRadius: borderRadius.full,
-      backgroundColor: currentTheme.background,
+      backgroundColor: isIncoming ? 'rgba(46, 204, 113, 0.1)' : 'rgba(231, 76, 60, 0.1)',
       justifyContent: 'center',
       alignItems: 'center',
-      marginRight: spacing.sm,
+      marginRight: spacing.md,
     },
     detailsContainer: {
       flex: 1,
@@ -69,41 +68,40 @@ export function TransactionItem({ transaction, index, onPress }: TransactionItem
     },
     leftColumn: {
       flex: 1,
-      marginRight: spacing.sm,
+      marginRight: spacing.md,
     },
     rightColumn: {
       alignItems: 'flex-end',
     },
     transactionType: {
       ...typography(currentTheme).body,
-      fontWeight: '500' as const,
+      fontWeight: '600' as const,
     },
     date: {
       ...typography(currentTheme).caption,
       color: currentTheme.text.secondary,
+      marginTop: 2,
     },
     amount: {
       ...typography(currentTheme).body,
       textAlign: 'right',
-      fontWeight: '600' as const,
     },
     incoming: {
-      color: currentTheme.success,
     },
     outgoing: {
-      color: currentTheme.error,
     },
     status: {
       ...typography(currentTheme).caption,
       textAlign: 'right',
       color: currentTheme.text.secondary,
+      marginTop: 2,
     },
     confirmed: {
-      color: currentTheme.text.primary,
     },
     address: {
       ...typography(currentTheme).caption,
       color: currentTheme.text.secondary,
+      marginTop: 2,
     },
     btcAmount: {
       ...typography(currentTheme).caption,

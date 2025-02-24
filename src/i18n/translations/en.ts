@@ -10,7 +10,6 @@ export default {
     back: 'Back',
   },
   home: {
-    title: 'Bitcoin Wallet',
     recentTransactions: 'Recent Transactions',
     viewAll: 'View All',
     noTransactions: 'No transactions yet',
@@ -60,7 +59,6 @@ export default {
     seedCopied: 'Recovery phrase copied to clipboard',
   },
   payment: {
-    title: 'Request Payment',
     amount: 'Amount',
     continue: 'Continue',
     newRequest: 'New Request',

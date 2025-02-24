@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useWallet } from '../contexts/WalletContext';
 import { StorageService } from '../services/storage';
 import { Button } from '../components/Button';
-import { colors, spacing, typography, shadows } from '../theme';
+import { colors, spacing, typography, shadows, borderRadius } from '../theme';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/RootNavigator';
@@ -14,6 +14,7 @@ import { formatAddress } from '../utils/bitcoin';
 import { useThemeMode } from '../contexts/ThemeContext';
 import i18n from '../i18n';
 import { useSettings } from '../contexts/SettingsContext';
+import * as Clipboard from 'expo-clipboard';
 
 export default function SettingsScreen() {
   const { theme, themeMode, setThemeMode } = useThemeMode();
@@ -25,7 +26,14 @@ export default function SettingsScreen() {
   const [currentAddress, setCurrentAddress] = useState('No address');
   const [showSeed, setShowSeed] = useState(false);
 
-  const { settings, updateCurrency } = useSettings();
+  const settingsContext = useSettings();
+  const { currency = 'BTC' } = settingsContext?.state?.settings || {};
+
+  const updateCurrency = (newCurrency: 'BTC' | 'USD' | 'EUR') => {
+    if (settingsContext?.updateSettings) {
+      settingsContext.updateSettings({ currency: newCurrency });
+    }
+  };
 
   useEffect(() => {
     async function loadNextAddress() {
@@ -109,8 +117,11 @@ export default function SettingsScreen() {
     );
   };
 
-  const handleCopySeed = () => {
-    // Implementation of handleCopySeed function
+  const handleCopySeed = async () => {
+    if (walletState.mnemonic) {
+      await Clipboard.setStringAsync(walletState.mnemonic);
+      Alert.alert(i18n.t('import.seedCopied'));
+    }
   };
 
   const handleCurrencyPress = () => {
@@ -121,17 +132,17 @@ export default function SettingsScreen() {
         {
           text: 'BTC',
           onPress: () => updateCurrency('BTC'),
-          style: settings.currency === 'BTC' ? 'destructive' : 'default',
+          style: currency === 'BTC' ? 'destructive' : 'default',
         },
         {
           text: 'USD',
           onPress: () => updateCurrency('USD'),
-          style: settings.currency === 'USD' ? 'destructive' : 'default',
+          style: currency === 'USD' ? 'destructive' : 'default',
         },
         {
           text: 'EUR',
           onPress: () => updateCurrency('EUR'),
-          style: settings.currency === 'EUR' ? 'destructive' : 'default',
+          style: currency === 'EUR' ? 'destructive' : 'default',
         },
         {
           text: i18n.t('common.cancel'),
@@ -182,7 +193,7 @@ export default function SettingsScreen() {
     {
       icon: 'currency-btc',
       title: i18n.t('settings.currency'),
-      subtitle: settings.currency,
+      subtitle: currency,
       onPress: handleCurrencyPress,
       showChevron: true
     },
@@ -207,30 +218,44 @@ export default function SettingsScreen() {
     },
     section: {
       backgroundColor: currentTheme.card.background,
-      borderRadius: 8,
+      borderRadius: borderRadius.lg,
       padding: spacing.md,
       marginBottom: spacing.md,
       ...shadows(currentTheme).medium,
+      borderWidth: 1,
+      borderColor: currentTheme.card.border,
     },
     settingItem: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      paddingVertical: spacing.sm,
+      paddingVertical: spacing.md,
+      borderBottomWidth: 1,
+      borderBottomColor: 'rgba(0,0,0,0.05)',
     },
     settingContent: {
       flexDirection: 'row',
       alignItems: 'center',
+      flex: 1,
     },
     settingText: {
       ...typography(currentTheme).body,
       marginLeft: spacing.md,
+      fontWeight: '500',
     },
     settingSubtext: {
       ...typography(currentTheme).caption,
       color: currentTheme.text.secondary,
       marginTop: spacing.xs,
       marginLeft: spacing.md,
+    },
+    iconContainer: {
+      width: 40,
+      height: 40,
+      borderRadius: borderRadius.full,
+      backgroundColor: 'rgba(0,0,0,0.05)',
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     keyboardView: {
       flex: 1,
@@ -241,8 +266,10 @@ export default function SettingsScreen() {
     seedContainer: {
       backgroundColor: currentTheme.surface,
       padding: spacing.md,
-      borderRadius: 8,
+      borderRadius: borderRadius.md,
       marginTop: spacing.sm,
+      borderWidth: 1,
+      borderColor: currentTheme.error,
     },
     seedRow: {
       flexDirection: 'row',
@@ -252,10 +279,19 @@ export default function SettingsScreen() {
       ...typography(currentTheme).body,
       color: currentTheme.text.primary,
       flex: 1,
+      lineHeight: 24,
     },
     copyButton: {
       padding: spacing.xs,
       marginLeft: spacing.xs,
+    },
+    resetButton: {
+      backgroundColor: 'rgba(231, 76, 60, 0.1)',
+      borderColor: currentTheme.error,
+      borderWidth: 1,
+    },
+    resetText: {
+      color: currentTheme.error,
     },
   });
 
@@ -276,15 +312,20 @@ export default function SettingsScreen() {
               {settingsItems.map((item, index) => (
                 <TouchableOpacity
                   key={item.title}
-                  style={styles.settingItem}
+                  style={[
+                    styles.settingItem,
+                    index === settingsItems.length - 1 && { borderBottomWidth: 0 }
+                  ]}
                   onPress={item.onPress}
                 >
                   <View style={styles.settingContent}>
-                    <MaterialCommunityIcons 
-                      name={item.icon as any} 
-                      size={24} 
-                      color={currentTheme.text.primary} 
-                    />
+                    <View style={styles.iconContainer}>
+                      <MaterialCommunityIcons 
+                        name={item.icon as any} 
+                        size={24} 
+                        color={currentTheme.primary} 
+                      />
+                    </View>
                     <View>
                       <Text style={styles.settingText}>{item.title}</Text>
                       {item.subtitle && (
@@ -298,7 +339,7 @@ export default function SettingsScreen() {
                     <MaterialCommunityIcons 
                       name="chevron-right" 
                       size={24} 
-                      color={themeMode === 'dark' ? colors.dark.text.secondary : colors.light.text.secondary} 
+                      color={currentTheme.text.secondary} 
                     />
                   )}
                 </TouchableOpacity>

@@ -53,7 +53,8 @@
     "react-native-screens": "~4.4.0",
     "react-native-svg": "15.8.0",
     "stream-browserify": "^3.0.0",
-    "util": "^0.12.5"
+    "util": "^0.12.5",
+    "expo-linear-gradient": "~14.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

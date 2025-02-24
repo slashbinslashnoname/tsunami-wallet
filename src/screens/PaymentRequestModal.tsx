@@ -10,7 +10,8 @@ import {
   Platform,
   ScrollView,
   Modal,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  TouchableOpacity
 } from 'react-native';
 import {  useSafeAreaInsets } from 'react-native-safe-area-context';
 import QRCode from 'react-native-qrcode-svg';
@@ -34,16 +35,19 @@ interface PaymentRequest {
 
 interface PaymentRequestProps {
   onClose: () => void;
+  navigation: any;
+  route: any;
+  settingsContext: any;
 }
 
-export default function PaymentRequest({ onClose }: PaymentRequestProps) {
+export default function PaymentRequest({ onClose, navigation, route, settingsContext }: PaymentRequestProps) {
   const { theme } = useThemeMode();
   const currentTheme = theme === 'dark' ? colors.dark : colors.light;
 
   const { state: walletState, dispatch } = useWallet();
-  const { state: settingsState } = useSettings();
+  const { settings } = settingsContext;
   const [amount, setAmount] = useState('');
-  const [currency, setCurrency] = useState<Currency>(settingsState.settings.currency);
+  const [currency, setCurrency] = useState<Currency>(settings?.currency || 'BTC');
   const [rates, setRates] = useState({ USD: 0, EUR: 0 });
   const [qrData, setQrData] = useState('');
   const [copied, setCopied] = useState(false);
@@ -138,7 +142,7 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
       justifyContent: 'center',
       gap: spacing.sm,
     },
-    currencyButton: {
+    currencyOption: {
       paddingVertical: spacing.sm,
       paddingHorizontal: spacing.md,
       borderRadius: borderRadius.full,
@@ -146,7 +150,7 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
       minWidth: 60,
       alignItems: 'center',
     },
-    currencyButtonActive: {
+    selectedCurrency: {
       backgroundColor: currentTheme.primary,
     },
     currencyText: {
@@ -154,7 +158,7 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
       color: currentTheme.text.primary,
       fontWeight: '500' as const,
     },
-    currencyTextActive: {
+    selectedCurrencyText: {
         color: currentTheme.white,
     },
     conversion: {
@@ -252,7 +256,7 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
 
   async function loadExchangeRates() {
     try {
-      const newRates = await ExchangeService.getRates();
+      const newRates = await ExchangeService.fetchRates();
       setRates(newRates);
     } catch (error) {
       console.error('Failed to load exchange rates:', error);
@@ -313,12 +317,12 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
     
     // Ensure only one decimal point
     if (cleanValue.split('.').length > 2) return;
-
+    
     // Update amount immediately
     setAmount(cleanValue);
-    
+
     // Early return if no valid number
-    const numValue = parseFloat(cleanValue);
+      const numValue = parseFloat(cleanValue);
     if (!cleanValue || isNaN(numValue) || !rates.USD || !rates.EUR) {
       setConvertedAmounts({ BTC: '', USD: '', EUR: '' });
       return;
@@ -327,9 +331,9 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
     // Calculate conversions
     const conversions = currency === 'BTC' 
       ? {
-          BTC: cleanValue,
-          USD: (numValue * rates.USD).toFixed(2),
-          EUR: (numValue * rates.EUR).toFixed(2)
+            BTC: cleanValue,
+            USD: (numValue * rates.USD).toFixed(2),
+            EUR: (numValue * rates.EUR).toFixed(2)
         }
       : {
           BTC: ExchangeService.convertToBTC(numValue, rates[currency]).toFixed(8),
@@ -410,50 +414,78 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
     }
   }, [currentAddress, step]);
 
+  // Add useEffect to update currency when settings change
+  useEffect(() => {
+    if (settings?.currency) {
+      setCurrency(settings.currency);
+    }
+  }, [settings?.currency]);
+
   const renderAmountStep = () => (
-    <View style={styles.card}>
-      <View style={styles.amountContainer}>
-        <Text style={styles.currencySymbol}>
-          {currency === 'USD' ? '$' : currency === 'EUR' ? '€' : '₿'}
-        </Text>
-        <TextInput
-          style={styles.input}
-          placeholder="0.00"
-          value={amount}
-          onChangeText={handleAmountChange}
-          keyboardType="decimal-pad"
-          placeholderTextColor={currentTheme.text.secondary}
-          autoFocus
-        />
-      </View>
-
-      <View style={styles.currencySelector}>
-        {(['BTC', 'USD', 'EUR'] as Currency[]).map((curr) => (
-          <Pressable
-            key={curr}
-            style={[
-              styles.currencyButton,
-              currency === curr && styles.currencyButtonActive
-            ]}
-            onPress={() => handleCurrencyChange(curr)}
-          >
-            <Text style={[
-              styles.currencyText,
-              currency === curr && styles.currencyTextActive
-            ]}>
-              {curr}
+        <View style={styles.card}>
+          <View style={styles.amountContainer}>
+            <Text style={styles.currencySymbol}>
+              {currency === 'USD' ? '$' : currency === 'EUR' ? '€' : '₿'}
             </Text>
-          </Pressable>
-        ))}
-      </View>
+            <TextInput
+              style={styles.input}
+              placeholder="0.00"
+              value={amount}
+              onChangeText={handleAmountChange}
+              keyboardType="decimal-pad"
+          placeholderTextColor={currentTheme.text.secondary}
+              autoFocus
+            />
+          </View>
 
-      {amount && Object.entries(convertedAmounts)
-        .filter(([curr]) => curr !== currency)
-        .map(([curr, value]) => (
-          <Text key={curr} style={styles.conversion}>
-            ≈ {curr === 'USD' ? '$' : curr === 'EUR' ? '€' : '₿'}{value} {curr}
-          </Text>
-        ))}
+          <View style={styles.currencySelector}>
+        <TouchableOpacity
+          style={[
+            styles.currencyOption,
+            currency === 'BTC' && styles.selectedCurrency
+          ]}
+          onPress={() => setCurrency('BTC')}
+        >
+          <Text style={[
+            styles.currencyText,
+            currency === 'BTC' && styles.selectedCurrencyText
+          ]}>BTC</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[
+            styles.currencyOption,
+            currency === 'USD' && styles.selectedCurrency
+          ]}
+          onPress={() => setCurrency('USD')}
+        >
+          <Text style={[
+            styles.currencyText,
+            currency === 'USD' && styles.selectedCurrencyText
+          ]}>USD</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+                style={[
+            styles.currencyOption,
+            currency === 'EUR' && styles.selectedCurrency
+                ]}
+          onPress={() => setCurrency('EUR')}
+              >
+                <Text style={[
+                  styles.currencyText,
+            currency === 'EUR' && styles.selectedCurrencyText
+          ]}>EUR</Text>
+        </TouchableOpacity>
+          </View>
+
+          {amount && Object.entries(convertedAmounts)
+            .filter(([curr]) => curr !== currency)
+            .map(([curr, value]) => (
+              <Text key={curr} style={styles.conversion}>
+                ≈ {curr === 'USD' ? '$' : curr === 'EUR' ? '€' : '₿'}{value} {curr}
+              </Text>
+            ))}
 
       <Button
         title="Continue"
@@ -495,29 +527,29 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
         </View>
       ) : (
         <>
-          <QRCode
-            value={qrData}
-            size={240}
+            <QRCode
+              value={qrData}
+              size={240}
             backgroundColor={currentTheme.white}
             color={currentTheme.black}
-          />
-          <Pressable 
-            style={styles.addressContainer}
-            onPress={async () => {
-              if (currentAddress) {
-                await copyToClipboard(currentAddress);
-              }
-            }}
-          >
-            <Text style={styles.address} numberOfLines={1}>
-              {currentAddress || 'No address available'}
-            </Text>
-            <MaterialCommunityIcons 
-              name={copied ? "check" : "content-copy"} 
-              size={20} 
-              color={copied ? currentTheme.success : currentTheme.text.secondary} 
             />
-          </Pressable>
+            <Pressable 
+              style={styles.addressContainer}
+              onPress={async () => {
+                if (currentAddress) {
+                  await copyToClipboard(currentAddress);
+                }
+              }}
+            >
+              <Text style={styles.address} numberOfLines={1}>
+                {currentAddress || 'No address available'}
+              </Text>
+              <MaterialCommunityIcons 
+                name={copied ? "check" : "content-copy"} 
+                size={20} 
+              color={copied ? currentTheme.success : currentTheme.text.secondary} 
+              />
+            </Pressable>
         </>
       )}
 
@@ -535,7 +567,7 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
         variant={paymentConfirmed ? "primary" : "secondary"}
         style={styles.newRequestButton}
       />
-    </View>
+          </View>
   );
 
   const renderContent = () => {
@@ -581,24 +613,24 @@ export default function PaymentRequest({ onClose }: PaymentRequestProps) {
             keyboardShouldPersistTaps="handled"
           >
             <View style={styles.modalContent}>
-              <View style={styles.handle} />
-              
-              <View style={styles.header}>
-                <Text style={styles.title}>Request Payment</Text>
-                <Pressable 
-                  style={styles.closeButton} 
-                  onPress={onClose}
-                  hitSlop={8}
-                >
-                  <MaterialCommunityIcons 
-                    name="close" 
-                    size={24} 
+          <View style={styles.handle} />
+          
+          <View style={styles.header}>
+                <Text style={styles.title}></Text>
+            <Pressable 
+              style={styles.closeButton} 
+              onPress={onClose}
+              hitSlop={8}
+            >
+              <MaterialCommunityIcons 
+                name="close" 
+                size={24} 
                     color={currentTheme.text.secondary} 
-                  />
-                </Pressable>
-              </View>
+              />
+            </Pressable>
+          </View>
 
-              {renderContent()}
+          {renderContent()}
             </View>
           </ScrollView>
         </View>

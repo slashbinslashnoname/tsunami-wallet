@@ -10,7 +10,6 @@ export default {
     back: 'Retour',
   },
   home: {
-    title: 'Portefeuille Bitcoin',
     recentTransactions: 'Transactions récentes',
     viewAll: 'Voir tout',
     noTransactions: 'Aucune transaction',
