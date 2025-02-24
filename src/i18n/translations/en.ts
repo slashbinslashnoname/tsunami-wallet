@@ -41,6 +41,8 @@ export default {
     noSeedStored: 'No recovery phrase stored',
     confirmExport: 'Are you sure you want to show your recovery phrase?',
     seedPhrase: 'Recovery Phrase',
+    currency: 'Currency',
+    selectCurrency: 'Select display currency',
   },
   import: {
     title: 'Import Wallet',

@@ -13,6 +13,7 @@ import { AddressService } from '../services/address';
 import { formatAddress } from '../utils/bitcoin';
 import { useThemeMode } from '../contexts/ThemeContext';
 import i18n from '../i18n';
+import { useSettings } from '../contexts/SettingsContext';
 
 export default function SettingsScreen() {
   const { theme, themeMode, setThemeMode } = useThemeMode();
@@ -23,6 +24,8 @@ export default function SettingsScreen() {
   const [nextAddress, setNextAddress] = useState('No address');
   const [currentAddress, setCurrentAddress] = useState('No address');
   const [showSeed, setShowSeed] = useState(false);
+
+  const { settings, updateCurrency } = useSettings();
 
   useEffect(() => {
     async function loadNextAddress() {
@@ -110,6 +113,34 @@ export default function SettingsScreen() {
     // Implementation of handleCopySeed function
   };
 
+  const handleCurrencyPress = () => {
+    Alert.alert(
+      i18n.t('settings.currency'),
+      i18n.t('settings.selectCurrency'),
+      [
+        {
+          text: 'BTC',
+          onPress: () => updateCurrency('BTC'),
+          style: settings.currency === 'BTC' ? 'destructive' : 'default',
+        },
+        {
+          text: 'USD',
+          onPress: () => updateCurrency('USD'),
+          style: settings.currency === 'USD' ? 'destructive' : 'default',
+        },
+        {
+          text: 'EUR',
+          onPress: () => updateCurrency('EUR'),
+          style: settings.currency === 'EUR' ? 'destructive' : 'default',
+        },
+        {
+          text: i18n.t('common.cancel'),
+          style: 'cancel',
+        },
+      ]
+    );
+  };
+
   const settingsItems = [
     {
       icon: 'bell-outline',
@@ -149,11 +180,19 @@ export default function SettingsScreen() {
       showChevron: true
     },
     {
+      icon: 'currency-btc',
+      title: i18n.t('settings.currency'),
+      subtitle: settings.currency,
+      onPress: handleCurrencyPress,
+      showChevron: true
+    },
+    {
       icon: 'key',
       title: i18n.t('settings.exportSeed'),
       onPress: handleExportSeed,
       showChevron: true
     },
+
   ];
 
   const styles = StyleSheet.create({

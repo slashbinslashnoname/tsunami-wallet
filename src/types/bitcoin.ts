@@ -36,4 +36,12 @@ export interface PaymentRequest {
   address: string;
   label?: string;
   message?: string;
+}
+
+export interface Settings {
+  currency: 'BTC' | 'USD' | 'EUR';
+  exchangeRates: {
+    USD: number;
+    EUR: number;
+  };
 } 

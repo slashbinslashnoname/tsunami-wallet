@@ -1,9 +1,10 @@
 import * as SecureStore from 'expo-secure-store';
-import { XPubData } from '../types/bitcoin';
+import { XPubData, Settings } from '../types/bitcoin';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const XPUB_STORAGE_KEY = 'wallet_xpub_data';
 const THEME_MODE_KEY = 'themeMode';
+const SETTINGS_KEY = 'wallet_settings';
 
 export const StorageService = {
   async saveXPubData(data: XPubData): Promise<void> {
@@ -50,6 +51,24 @@ export const StorageService = {
       return await AsyncStorage.getItem(THEME_MODE_KEY);
     } catch (error) {
       console.error('Error getting theme mode:', error);
+      return null;
+    }
+  },
+
+  saveSettings: async (settings: Settings): Promise<void> => {
+    try {
+      await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    } catch (error) {
+      console.error('Error saving settings:', error);
+    }
+  },
+
+  getSettings: async (): Promise<Settings | null> => {
+    try {
+      const data = await AsyncStorage.getItem(SETTINGS_KEY);
+      return data ? JSON.parse(data) : null;
+    } catch (error) {
+      console.error('Error getting settings:', error);
       return null;
     }
   },

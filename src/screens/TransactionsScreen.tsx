@@ -7,104 +7,8 @@ import { useWallet } from '../contexts/WalletContext';
 import { Transaction } from '../types/bitcoin';
 import { colors, spacing, typography, layout, borderRadius } from '../theme';
 import { useThemeMode } from '../contexts/ThemeContext';
-
-function TransactionItem({ transaction }: { transaction: Transaction }) {
-  const { theme } = useThemeMode();
-  const currentTheme = theme === 'dark' ? colors.dark : colors.light;
-  const isIncoming = transaction.type === "incoming";
-  const amount = transaction.amount.toFixed(8);
-  const date = new Date(transaction.timestamp).toLocaleDateString();
-
-  // Get the relevant address to display
-  const address = isIncoming 
-    ? transaction.addresses[transaction.addresses.length - 1] // Last address is usually the receiving address
-    : transaction.addresses[0]; // First address is usually the sending address
-
-  const styles = StyleSheet.create({
-
-    transactionItem: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: spacing.sm,
-      ...layout(currentTheme).card,
-    },
-    iconContainer: {
-      width: 40,
-      height: 40,
-      borderRadius: borderRadius.full,
-      backgroundColor: currentTheme.background,
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginRight: spacing.md,
-    },
-    detailsContainer: {
-      flex: 1,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-    },
-    transactionType: {
-      ...typography(currentTheme).body,
-      fontWeight: '500',
-    },
-    date: {
-      ...typography(currentTheme).caption,
-      color: currentTheme.text.secondary,
-    },
-    amount: {
-      ...typography(currentTheme).body,
-      textAlign: 'right',
-      fontWeight: '600',
-    },
-    currency: {
-      color: currentTheme.primary,
-    },
-    incoming: {
-      color: currentTheme.primary,
-    },
-    outgoing: {
-      color: currentTheme.primary,
-    },
-    status: {
-      ...typography(currentTheme).caption,
-      color: currentTheme.text.secondary,
-      textAlign: 'right',
-    },
-    confirmed: {
-      color: currentTheme.primary,
-    },
-  });
-
-  return (
-    <View style={styles.transactionItem}>
-      <View style={styles.iconContainer}>
-        <MaterialCommunityIcons 
-          name={isIncoming ? 'arrow-bottom-left' : 'arrow-top-right'} 
-          size={24} 
-          color={isIncoming ? currentTheme.success : currentTheme.error} 
-        />
-      </View>
-      <View style={styles.detailsContainer}>
-        <View>
-          <Text style={styles.transactionType}>
-            {isIncoming ? 'Received' : 'Sent'}
-          </Text>
-          <Text style={styles.date}>{date}</Text>
-        </View>
-        <View>
-          <Text style={[styles.amount, isIncoming ? styles.incoming : styles.outgoing]}>
-            {isIncoming ? '+' : ''}{amount} <Text style={styles.currency}>BTC</Text>
-          </Text>
-          <Text style={[styles.status, transaction.confirmations > 0 && styles.confirmed]}>
-            {transaction.confirmations === 0 ? 'pending' :
-             'confirmed'}
-          </Text>
-        </View>
-
-      </View>
-    </View>
-  );
-}
+import { TransactionItem } from '../components/TransactionItem';
+import i18n from '../i18n';
 
 const TRANSACTIONS_PER_PAGE = 20;
 
@@ -171,10 +75,6 @@ export default function TransactionsScreen() {
       ...typography(currentTheme).body,
       color: currentTheme.primary,
     },
-    address: {
-      ...typography(currentTheme).caption,
-      color: currentTheme.text.secondary,
-    },
   });
 
   const paginatedTransactions = walletState.transactions.slice(0, (page + 1) * TRANSACTIONS_PER_PAGE);
@@ -213,7 +113,7 @@ export default function TransactionsScreen() {
             color={currentTheme.text.primary} 
           />
         </Pressable>
-        <Text style={styles.title}>Transactions</Text>
+        <Text style={styles.title}>{i18n.t('transactions.title')}</Text>
         <View style={styles.backButton} />
       </View>
 
@@ -235,7 +135,7 @@ export default function TransactionsScreen() {
               size={48} 
               color={currentTheme.text.secondary} 
             />
-            <Text style={styles.emptyText}>No transactions yet</Text>
+            <Text style={styles.emptyText}>{i18n.t('home.noTransactions')}</Text>
           </View>
         }
         ListFooterComponent={
@@ -247,7 +147,7 @@ export default function TransactionsScreen() {
               {isLoadingMore ? (
                 <ActivityIndicator color={currentTheme.primary} />
               ) : (
-                <Text style={styles.loadMoreText}>Load More</Text>
+                <Text style={styles.loadMoreText}>{i18n.t('transactions.loadMore')}</Text>
               )}
             </Pressable>
           ) : null

@@ -41,6 +41,8 @@ export default {
     noSeedStored: 'Aucune phrase de récupération enregistrée',
     confirmExport: 'Voulez-vous vraiment afficher votre phrase de récupération ?',
     seedPhrase: 'Phrase de récupération',
+    currency: 'Devise',
+    selectCurrency: 'Sélectionner la devise d\'affichage',
   },
   import: {
     title: 'Importer un portefeuille',
