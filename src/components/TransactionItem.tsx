@@ -18,7 +18,6 @@ export function TransactionItem({ transaction, index, onPress }: TransactionItem
   const currentTheme = theme === 'dark' ? colors.dark : colors.light;
   const { state } = useSettings();
   const { currency = 'BTC', exchangeRates = { USD: 0, EUR: 0 } } = state?.settings || {};
-  console.log(exchangeRates)
   const isIncoming = transaction.type === 'incoming';
   const date = new Date(transaction.timestamp).toLocaleString();
 

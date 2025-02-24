@@ -45,9 +45,11 @@ export default function PaymentRequest({ onClose, navigation, route, settingsCon
   const currentTheme = theme === 'dark' ? colors.dark : colors.light;
 
   const { state: walletState, dispatch } = useWallet();
-  const { settings } = settingsContext;
+  const { state: settingsState } = useSettings();
   const [amount, setAmount] = useState('');
-  const [currency, setCurrency] = useState<Currency>(settings?.currency || 'BTC');
+  const [currency, setCurrency] = useState<Currency>(
+    settingsState?.settings?.currency || 'BTC'
+  );
   const [rates, setRates] = useState({ USD: 0, EUR: 0 });
   const [qrData, setQrData] = useState('');
   const [copied, setCopied] = useState(false);
@@ -416,10 +418,10 @@ export default function PaymentRequest({ onClose, navigation, route, settingsCon
 
   // Add useEffect to update currency when settings change
   useEffect(() => {
-    if (settings?.currency) {
-      setCurrency(settings.currency);
+    if (settingsState?.settings?.currency) {
+      setCurrency(settingsState.settings.currency);
     }
-  }, [settings?.currency]);
+  }, [settingsState?.settings?.currency]);
 
   const renderAmountStep = () => (
         <View style={styles.card}>

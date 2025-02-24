@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
 import HomeScreen from '../screens/HomeScreen';
@@ -9,6 +9,7 @@ import SettingsScreen from '../screens/SettingsScreen';
 import { colors } from '../theme';
 import { ActivityScreen } from '../screens/ActivityScreen';
 import { useThemeMode, ThemeProvider } from '../contexts/ThemeContext';
+import LoadingScreen from '../screens/LoadingScreen';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -32,13 +33,27 @@ export function RootNavigator() {
 }
 
 function MainNavigator() {
-  const { state } = useWallet();
+  const { state, dispatch } = useWallet();
   const { theme } = useThemeMode();
   const currentTheme = theme === 'dark' ? colors.dark : colors.light;
 
+  useEffect(() => {
+    if (state.xpubData) {
+      dispatch({ type: "REFRESH" });
+    }
+    dispatch({ type: 'SET_LOADING', payload: false });
+
+  }, [state.xpubData])
+
   return (
     <Stack.Navigator>
-      {!state.xpubData || state.isLoading ? (
+      {state.isLoading ? (
+        <Stack.Screen 
+          name="Loading" 
+          component={LoadingScreen} 
+          options={{ headerShown: false }} 
+        />
+      ) : !state.xpubData ? (
         <Stack.Screen 
           name="ImportXPub" 
           component={ImportXPubScreen} 

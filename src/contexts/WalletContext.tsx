@@ -19,14 +19,14 @@ type WalletAction =
   | { type: 'SET_XPUB'; payload: XPubData }
   | { type: 'SET_BALANCE'; payload: Balance }
   | { type: 'SET_TRANSACTIONS'; payload: Transaction[] }
-  | { type: 'SET_ADDRESSES'; payload: AddressData[] }
+  | { type: 'SET_ADDRESSES'; payload: string[] }
   | { type: 'SET_INDEX'; payload: number }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_REFRESHING'; payload: boolean }
   | { type: 'REFRESH' }
   | { type: 'RESET' }
   | { type: 'ADD_TRANSACTION'; payload: Transaction }
-  | { type: 'SET_MNEMONIC'; payload: string | null };
+  | { type: 'SET_MNEMONIC'; payload: string };
 
 const initialState: WalletState = {
   xpubData: null,
@@ -64,7 +64,7 @@ function walletReducer(state: WalletState, action: WalletAction): WalletState {
     case 'SET_TRANSACTIONS':
       return { ...state, transactions: action.payload };
     case 'SET_ADDRESSES':
-      return { ...state, addresses: action.payload };
+      return { ...state, addresses: action.payload.map(address => ({ ...address, address })) };
     case 'SET_INDEX':
       return { ...state, index: action.payload };
     case 'SET_LOADING':
@@ -99,8 +99,17 @@ function walletReducer(state: WalletState, action: WalletAction): WalletState {
   }
 }
 
-export function WalletProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(walletReducer, initialState);
+export function WalletProvider({ 
+  children, 
+  initialXpubData = null 
+}: { 
+  children: React.ReactNode;
+  initialXpubData?: XPubData | null;
+}) {
+  const [state, dispatch] = useReducer(walletReducer, {
+    ...initialState,
+    xpubData: initialXpubData
+  });
 
   useEffect(() => {
     loadStoredData();
@@ -190,7 +199,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
   function updateWalletState(allAddresses: AddressData[], allTransactions: Transaction[], lastIndex: number) {
     dispatch({ type: 'SET_INDEX', payload: lastIndex });
-    dispatch({ type: 'SET_ADDRESSES', payload: allAddresses });
+    dispatch({ type: 'SET_ADDRESSES', payload: allAddresses.map(address => address.address) });
     dispatch({ type: 'SET_TRANSACTIONS', payload: allTransactions });
 
     const { confirmed, unconfirmed } = calculateTotalBalance(allTransactions);

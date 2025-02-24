@@ -80,7 +80,7 @@ export default function ImportXPubScreen() {
       };
       await StorageService.saveXPubData(xpubData);
       dispatch({ type: 'SET_XPUB', payload: xpubData });
-      dispatch({ type: 'SET_MNEMONIC', payload: generatedSeed });
+      dispatch({ type: 'SET_MNEMONIC', payload: generatedSeed! });
       dispatch({ type: 'SET_LOADING', payload: false });
       dispatch({ type: 'REFRESH' });
     } catch (error) {
