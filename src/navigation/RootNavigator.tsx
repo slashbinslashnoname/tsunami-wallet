@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
 import HomeScreen from '../screens/HomeScreen';
 import ImportXPubScreen from '../screens/ImportXPubScreen';
+import CreateWalletScreen from '../screens/CreateWalletScreen';
 import { useWallet } from '../contexts/WalletContext';
 import TransactionsScreen from '../screens/TransactionsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
@@ -10,14 +11,17 @@ import { colors } from '../theme';
 import { ActivityScreen } from '../screens/ActivityScreen';
 import { useThemeMode, ThemeProvider } from '../contexts/ThemeContext';
 import LoadingScreen from '../screens/LoadingScreen';
+import SendScreen from '../screens/SendScreen';
 
 export type RootStackParamList = {
   Home: undefined;
   ImportXPub: undefined;
+  CreateWallet: undefined;
   Transactions: undefined;
   Settings: undefined;
   Activity: undefined;
   Loading: undefined;
+  Send: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -54,17 +58,67 @@ function MainNavigator() {
           options={{ headerShown: false }} 
         />
       ) : !state.xpubData ? (
-        <Stack.Screen 
-          name="ImportXPub" 
-          component={ImportXPubScreen} 
-          options={{ headerShown: false }} 
-        />
+        <>
+          <Stack.Screen 
+            name="Home" 
+            component={HomeScreen} 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name="ImportXPub" 
+            component={ImportXPubScreen} 
+            options={{ 
+              headerShown: true,
+              title: 'Import Watch-only Wallet',
+              headerStyle: {
+                backgroundColor: currentTheme.background,
+              },
+              headerTintColor: currentTheme.text.primary,
+            }} 
+          />
+          <Stack.Screen 
+            name="CreateWallet" 
+            component={CreateWalletScreen} 
+            options={{ 
+              headerShown: true,
+              title: 'Create Wallet',
+              headerStyle: {
+                backgroundColor: currentTheme.background,
+              },
+              headerTintColor: currentTheme.text.primary,
+            }} 
+          />
+        </>
       ) : (
         <>
           <Stack.Screen 
             name="Home" 
             component={HomeScreen} 
             options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name="CreateWallet" 
+            component={CreateWalletScreen} 
+            options={{ 
+              headerShown: true,
+              title: 'Create Wallet',
+              headerStyle: {
+                backgroundColor: currentTheme.background,
+              },
+              headerTintColor: currentTheme.text.primary,
+            }} 
+          />
+          <Stack.Screen 
+            name="ImportXPub" 
+            component={ImportXPubScreen} 
+            options={{ 
+              headerShown: true,
+              title: 'Import Watch-only Wallet',
+              headerStyle: {
+                backgroundColor: currentTheme.background,
+              },
+              headerTintColor: currentTheme.text.primary,
+            }} 
           />
           <Stack.Screen 
             name="Transactions" 
@@ -96,6 +150,18 @@ function MainNavigator() {
               },
               headerTintColor: currentTheme.text.primary
             }}
+          />
+          <Stack.Screen 
+            name="Send" 
+            component={SendScreen} 
+            options={{ 
+              headerShown: true,
+              title: 'Send Bitcoin',
+              headerStyle: {
+                backgroundColor: currentTheme.background,
+              },
+              headerTintColor: currentTheme.text.primary,
+            }} 
           />
         </>
       )}

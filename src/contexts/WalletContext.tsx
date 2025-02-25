@@ -2,7 +2,9 @@ import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { XPubData, Balance, Transaction } from '../types/bitcoin';
 import { StorageService } from '../services/storage';
 import { AddressService } from '../services/address';
+import { WalletService } from '../services/wallet';
 import { AddressData } from '../types/bitcoin';
+import { TransactionService } from '../services/transaction';
 
 interface WalletState {
   transactions: Transaction[];
@@ -13,6 +15,11 @@ interface WalletState {
   index: number;
   isRefreshing: boolean;
   mnemonic: string | null;
+  hasFullWallet: boolean; // Flag to indicate if we have a full wallet with private keys
+  selectedAddressType: 'p2pkh' | 'p2sh-p2wpkh' | 'p2wpkh';
+  feeRates: { slow: number; medium: number; fast: number } | null;
+  isSendingTransaction: boolean;
+  hasPrivateKey: boolean;
 }
 
 type WalletAction =
@@ -26,7 +33,12 @@ type WalletAction =
   | { type: 'REFRESH' }
   | { type: 'RESET' }
   | { type: 'ADD_TRANSACTION'; payload: Transaction }
-  | { type: 'SET_MNEMONIC'; payload: string };
+  | { type: 'SET_MNEMONIC'; payload: string }
+  | { type: 'SET_HAS_FULL_WALLET'; payload: boolean }
+  | { type: 'SET_ADDRESS_TYPE'; payload: 'p2pkh' | 'p2sh-p2wpkh' | 'p2wpkh' }
+  | { type: 'SET_FEE_RATES'; payload: { slow: number; medium: number; fast: number } }
+  | { type: 'SET_SENDING_TRANSACTION'; payload: boolean }
+  | { type: 'SET_HAS_PRIVATE_KEY'; payload: boolean };
 
 const initialState: WalletState = {
   xpubData: null,
@@ -40,17 +52,30 @@ const initialState: WalletState = {
   isLoading: true,
   isRefreshing: false,
   mnemonic: null,
+  hasFullWallet: false,
+  selectedAddressType: 'p2wpkh', // Default to native SegWit (most efficient)
+  feeRates: null,
+  isSendingTransaction: false,
+  hasPrivateKey: false,
 };
 
 const WalletContext = createContext<{
   state: WalletState;
   dispatch: React.Dispatch<WalletAction>;
+  sendTransaction: (toAddress: string, amountBTC: number, feeRate: number) => Promise<string>;
 } | undefined>(undefined);
 
 function walletReducer(state: WalletState, action: WalletAction): WalletState {
   switch (action.type) {
     case 'SET_XPUB':
-      return { ...state, xpubData: action.payload };
+      return { 
+        ...state, 
+        xpubData: action.payload,
+        // If xpubData has a mnemonic, set hasFullWallet to true
+        hasFullWallet: !!action.payload.mnemonic,
+        // If xpubData has a mnemonic, update our mnemonic too
+        mnemonic: action.payload.mnemonic || state.mnemonic
+      };
     case 'SET_BALANCE':
       return {
         ...state,
@@ -74,7 +99,7 @@ function walletReducer(state: WalletState, action: WalletAction): WalletState {
     case 'REFRESH':
       return { ...state, isRefreshing: state.isRefreshing ? false : true };
     case 'RESET':
-      return { ...initialState, mnemonic: null };
+      return { ...initialState, mnemonic: null, hasFullWallet: false };
     case 'ADD_TRANSACTION':
       const isIncoming = action.payload.type === 'incoming';
       const amount = action.payload.amount;
@@ -93,7 +118,17 @@ function walletReducer(state: WalletState, action: WalletAction): WalletState {
         }
       };
     case 'SET_MNEMONIC':
-      return { ...state, mnemonic: action.payload };
+      return { ...state, mnemonic: action.payload, hasFullWallet: !!action.payload };
+    case 'SET_HAS_FULL_WALLET':
+      return { ...state, hasFullWallet: action.payload };
+    case 'SET_ADDRESS_TYPE':
+      return { ...state, selectedAddressType: action.payload };
+    case 'SET_FEE_RATES':
+      return { ...state, feeRates: action.payload };
+    case 'SET_SENDING_TRANSACTION':
+      return { ...state, isSendingTransaction: action.payload };
+    case 'SET_HAS_PRIVATE_KEY':
+      return { ...state, hasPrivateKey: action.payload };
     default:
       return state;
   }
@@ -120,9 +155,16 @@ export function WalletProvider({
       const xpubData = await StorageService.getXPubData();
       if (xpubData) {
         dispatch({ type: 'SET_XPUB', payload: xpubData });
+        
+        // If there's a mnemonic, we have a full wallet
+        if (xpubData.mnemonic) {
+          dispatch({ type: 'SET_HAS_FULL_WALLET', payload: true });
+        }
+        
         await refreshWalletData(xpubData.xpub);
       }
     } catch (error) {
+      console.error('Error loading wallet data:', error);
       dispatch({ type: 'SET_LOADING', payload: false });
     }
   }
@@ -143,7 +185,16 @@ export function WalletProvider({
 
   function createXpubData(xpub: string): XPubData {
     const format = AddressService.detectXpubFormat(xpub);
-    return { xpub, format, derivationPath: '', network: 'mainnet' as 'mainnet' | 'testnet' };
+    // Make sure we preserve the mnemonic when re-creating XPubData
+    // This is crucial because when refreshWalletData is called, it creates
+    // a new XPubData that doesn't include any existing mnemonic
+    return { 
+      xpub, 
+      format, 
+      derivationPath: '', 
+      network: 'mainnet' as 'mainnet' | 'testnet',
+      mnemonic: state.xpubData?.mnemonic || null
+    };
   }
 
   async function deriveAndFetchData(xpubData: XPubData) {
@@ -204,6 +255,12 @@ export function WalletProvider({
 
     const { confirmed, unconfirmed } = calculateTotalBalance(allTransactions);
     dispatch({ type: 'SET_BALANCE', payload: { confirmed, unconfirmed } });
+    
+    // Ensure hasFullWallet is set correctly based on mnemonic presence
+    if (state.xpubData?.mnemonic) {
+      dispatch({ type: 'SET_HAS_FULL_WALLET', payload: true });
+      dispatch({ type: 'SET_MNEMONIC', payload: state.xpubData.mnemonic });
+    }
   }
 
   function calculateTotalBalance(transactions: Transaction[]) {
@@ -224,8 +281,60 @@ export function WalletProvider({
     }
   }, [state.isRefreshing]);
 
+  // Send Bitcoin transaction
+  async function sendTransaction(
+    toAddress: string, 
+    amountBTC: number, 
+    feeRate: number
+  ): Promise<string> {
+    if (!state.xpubData) {
+      throw new Error('Wallet not initialized');
+    }
+    
+    try {
+      dispatch({ type: 'SET_SENDING_TRANSACTION', payload: true });
+      
+      // Send the transaction
+      const txid = await TransactionService.sendTransaction(
+        toAddress,
+        amountBTC,
+        feeRate,
+        state.xpubData
+      );
+      
+      // Create a new transaction object for the UI
+      const newTx: Transaction = {
+        txid,
+        amount: amountBTC,
+        confirmations: 0,
+        timestamp: Date.now(),
+        type: 'outgoing',
+        addresses: [toAddress],
+        status: 'pending',
+        fee: feeRate * 0.000001 // Approximate fee in BTC
+      };
+      
+      // Add the transaction to the state
+      dispatch({ type: 'ADD_TRANSACTION', payload: newTx });
+      
+      // Save the recipient address to recent addresses
+      await StorageService.addRecentAddress({ address: toAddress, label: '', timestamp: Date.now() });
+      
+      return txid;
+    } catch (error) {
+      console.error('Error sending transaction:', error);
+      throw error;
+    } finally {
+      dispatch({ type: 'SET_SENDING_TRANSACTION', payload: false });
+    }
+  }
+
   return (
-    <WalletContext.Provider value={{ state, dispatch }}>
+    <WalletContext.Provider value={{ 
+      state, 
+      dispatch,
+      sendTransaction
+    }}>
       {children}
     </WalletContext.Provider>
   );
