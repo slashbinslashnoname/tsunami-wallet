@@ -1,6 +1,6 @@
-# Boilerplate for React Native with BitcoinJS Library
+# React Native XPUB derivating wallet
 
-This is a boilerplate for React Native with BitcoinJS Library. It includes a simple UI to generate a Bitcoin address.
+This is a wallet.
 
 ## Features
 
