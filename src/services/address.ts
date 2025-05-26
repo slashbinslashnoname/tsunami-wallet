@@ -99,41 +99,62 @@ export const AddressService = {
     return addresses;
   },
 
-  convertExtendedKey(xpub: string, targetVersion: string): string {
+  convertExtendedKey(xpub: string, targetFormat: XPubData['format']): string {
     try {
-      // Decode the base58 string
-      const decoded = bs58.decode(xpub);
+      console.log(`[DEBUG convertExtendedKey] Input xpub: ${xpub}, TargetFormat: ${targetFormat}`);
+      const decoded = bs58.decode(xpub) as Buffer; // Renamed to 'decoded' as per prompt's logging example
+      const sourceHex = decoded.toString('hex');
+      console.log(`[DEBUG convertExtendedKey] SourceHex (${sourceHex.length}): ${sourceHex}`); // Prompt uses raw length
+
+      if (!NETWORK_VERSIONS[targetFormat]) {
+        throw new Error(`Invalid target format: ${targetFormat}`);
+      }
+      const versionBytes = NETWORK_VERSIONS[targetFormat].bip32.public;
+      const versionHex = versionBytes.toString(16).padStart(8, '0');
+      console.log(`[DEBUG convertExtendedKey] VersionHex (${versionHex.length}): ${versionHex}`); // Prompt uses raw length
+
+      // Refined logic application starts here, using prompt's variable names for clarity where possible
+      if (decoded.length !== 82) {
+          const errMsg = `Invalid xpub length: ${decoded.length}. Expected 82 bytes.`;
+          console.error(`[DEBUG convertExtendedKey] ${errMsg}`); // Logging error as per prompt example
+          throw new Error(errMsg);
+      }
+      const payload = decoded.slice(4, 78); // 74-byte payload
       
-      // Convert to hex string
-      const hex = decoded.toString('hex');
-      
-      // Replace version bytes (first 8 characters in hex)
-      const converted = targetVersion + hex.slice(8);
-      
-      // Convert back to buffer
-      const buffer = Buffer.from(converted, 'hex');
-      
-      // Calculate checksum (double sha256)
-      const hash1 = bitcoin.crypto.sha256(buffer.slice(0, -4));
+      const newVersionBuffer = Buffer.alloc(4);
+      newVersionBuffer.writeUInt32BE(versionBytes, 0);
+
+      const dataForNewChecksum = Buffer.concat([newVersionBuffer, payload]);
+      // The prompt's log example for ConvertedHex and BufferForChecksum seems to refer to an older, flawed logic.
+      // I will log the hex of dataForNewChecksum which is the important part for the refined logic.
+      console.log(`[DEBUG convertExtendedKey] DataForNewChecksum hex (${dataForNewChecksum.length*2}): ${dataForNewChecksum.toString('hex')}`);
+      console.log(`[DEBUG convertExtendedKey] BufferForChecksum length: ${dataForNewChecksum.length}`); // This is dataForNewChecksum
+  
+      const hash1 = bitcoin.crypto.sha256(dataForNewChecksum);
       const hash2 = bitcoin.crypto.sha256(hash1);
-      const checksum = hash2.slice(0, 4);
+      const checksum = hash2.slice(0, 4); // Renamed to 'checksum' as per prompt's logging example
+      console.log(`[DEBUG convertExtendedKey] Checksum: ${checksum.toString('hex')}`);
+  
+      const finalBuffer = Buffer.concat([dataForNewChecksum, checksum]);
+      console.log(`[DEBUG convertExtendedKey] FinalBuffer for bs58encode length: ${finalBuffer.length} bytes`);
       
-      // Combine everything
-      const final = Buffer.concat([buffer.slice(0, -4), checksum]);
-      
-      // Encode back to base58
-      return bs58.encode(final);
-    } catch (error) {
-      console.error('Error converting key format:', error);
-      throw new Error('Invalid extended public key format');
+      const result = bs58.encode(finalBuffer);
+      console.log(`[DEBUG convertExtendedKey] Result: ${result}`);
+      return result;
+  
+    } catch (error: any) { // Explicitly type error as any or unknown
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error('[convertExtendedKey] Error during conversion:', errorMessage);
+      // Consider re-throwing a more specific error or the original if it's already informative
+      throw new Error(`Conversion failed: ${errorMessage}`);
     }
-  },
+  }, // Added comma here
 
   detectXpubFormat(xpub: string): XPubData['format'] {
     if (xpub.startsWith('xpub')) return 'xpub';
     if (xpub.startsWith('ypub')) return 'ypub';
     if (xpub.startsWith('zpub')) return 'zpub';
-    throw new Error('Invalid xpub format');
+    throw new Error('Invalid xpub format'); // Reverted to simpler version
   },
 
   async getXpubTransactions(addresses: AddressData[]): Promise<Transaction[]> {
